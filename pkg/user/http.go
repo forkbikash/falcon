@@ -2,39 +2,33 @@ package user
 
 import (
 	"context"
-	"log/slog"
 	"net/http"
-	"os"
 	"strings"
 
+	"github.com/forkbikash/chat-backend/pkg/common"
+	"github.com/forkbikash/chat-backend/pkg/config"
 	"github.com/gin-gonic/gin"
-	"github.com/minghsu0107/go-random-chat/pkg/common"
-	"github.com/minghsu0107/go-random-chat/pkg/config"
 	metrics "github.com/slok/go-http-metrics/metrics/prometheus"
 	prommiddleware "github.com/slok/go-http-metrics/middleware"
 	ginmiddleware "github.com/slok/go-http-metrics/middleware/gin"
 
-	doc "github.com/minghsu0107/go-random-chat/docs/user"
-	swaggerFiles "github.com/swaggo/files"
-	ginSwagger "github.com/swaggo/gin-swagger"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
 )
 
 type HttpServer struct {
 	name              string
-	logger            common.HttpLog
+	logger            common.HttpLogrus
 	svr               *gin.Engine
 	httpPort          string
 	httpServer        *http.Server
 	userSvc           UserService
-	serveSwag         bool
 	googleOauthConfig *oauth2.Config
 	oauthCookieConfig config.CookieConfig
 	authCookieConfig  config.CookieConfig
 }
 
-func NewGinServer(name string, logger common.HttpLog, config *config.Config) *gin.Engine {
+func NewGinServer(name string, logger common.HttpLogrus, config *config.Config) *gin.Engine {
 	svr := gin.New()
 	svr.Use(gin.Recovery())
 	svr.Use(common.CorsMiddleware())
@@ -49,14 +43,13 @@ func NewGinServer(name string, logger common.HttpLog, config *config.Config) *gi
 	return svr
 }
 
-func NewHttpServer(name string, logger common.HttpLog, config *config.Config, svr *gin.Engine, userSvc UserService) *HttpServer {
+func NewHttpServer(name string, logger common.HttpLogrus, config *config.Config, svr *gin.Engine, userSvc UserService) *HttpServer {
 	return &HttpServer{
-		name:      name,
-		logger:    logger,
-		svr:       svr,
-		httpPort:  config.User.Http.Server.Port,
-		userSvc:   userSvc,
-		serveSwag: config.User.Http.Server.Swag,
+		name:     name,
+		logger:   logger,
+		svr:      svr,
+		httpPort: config.User.Http.Server.Port,
+		userSvc:  userSvc,
 		googleOauthConfig: &oauth2.Config{
 			RedirectURL:  config.User.OAuth.Google.RedirectUrl,
 			ClientID:     config.User.OAuth.Google.ClientId,
@@ -86,14 +79,6 @@ func (r *HttpServer) CookieAuth() gin.HandlerFunc {
 	}
 }
 
-// @title           User Service Swagger API
-// @version         2.0
-// @description     User service API
-
-// @contact.name   Ming Hsu
-// @contact.email  minghsu0107@gmail.com
-
-// @BasePath  /api
 func (r *HttpServer) RegisterRoutes() {
 	userGroup := r.svr.Group("/api/user")
 	{
@@ -107,9 +92,6 @@ func (r *HttpServer) RegisterRoutes() {
 		userGroup.GET("/oauth2/google/login", r.OAuthGoogleLogin)
 		userGroup.GET("/oauth2/google/callback", r.OAuthGoogleCallback)
 	}
-	if r.serveSwag {
-		userGroup.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler, ginSwagger.InstanceName(doc.SwaggerInfouser.InfoInstanceName)))
-	}
 }
 
 func (r *HttpServer) Run() {
@@ -119,11 +101,10 @@ func (r *HttpServer) Run() {
 			Addr:    addr,
 			Handler: common.NewOtelHttpHandler(r.svr, r.name+"_http"),
 		}
-		r.logger.Info("http server listening", slog.String("addr", addr))
+		r.logger.Infoln("http server listening on ", addr)
 		err := r.httpServer.ListenAndServe()
 		if err != nil && err != http.ErrServerClosed {
-			r.logger.Error(err.Error())
-			os.Exit(1)
+			r.logger.Fatal(err)
 		}
 	}()
 }

@@ -2,21 +2,15 @@ package chat
 
 import (
 	"context"
-	"log/slog"
 	"net/http"
-	"os"
 
+	"github.com/forkbikash/chat-backend/pkg/common"
+	"github.com/forkbikash/chat-backend/pkg/config"
 	"github.com/gin-gonic/gin"
-	"github.com/minghsu0107/go-random-chat/pkg/common"
-	"github.com/minghsu0107/go-random-chat/pkg/config"
 	metrics "github.com/slok/go-http-metrics/metrics/prometheus"
 	prommiddleware "github.com/slok/go-http-metrics/middleware"
 	ginmiddleware "github.com/slok/go-http-metrics/middleware/gin"
 	"gopkg.in/olahol/melody.v1"
-
-	doc "github.com/minghsu0107/go-random-chat/docs/chat"
-	swaggerFiles "github.com/swaggo/files"
-	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
 var (
@@ -31,7 +25,7 @@ type MelodyChatConn struct {
 
 type HttpServer struct {
 	name          string
-	logger        common.HttpLog
+	logger        common.HttpLogrus
 	svr           *gin.Engine
 	mc            MelodyChatConn
 	httpPort      string
@@ -41,7 +35,6 @@ type HttpServer struct {
 	msgSvc        MessageService
 	chanSvc       ChannelService
 	forwardSvc    ForwardService
-	serveSwag     bool
 }
 
 func NewMelodyChatConn(config *config.Config) MelodyChatConn {
@@ -53,7 +46,7 @@ func NewMelodyChatConn(config *config.Config) MelodyChatConn {
 	return MelodyChat
 }
 
-func NewGinServer(name string, logger common.HttpLog, config *config.Config) *gin.Engine {
+func NewGinServer(name string, logger common.HttpLogrus, config *config.Config) *gin.Engine {
 	svr := gin.New()
 	svr.Use(gin.Recovery())
 	svr.Use(common.CorsMiddleware())
@@ -69,7 +62,7 @@ func NewGinServer(name string, logger common.HttpLog, config *config.Config) *gi
 	return svr
 }
 
-func NewHttpServer(name string, logger common.HttpLog, config *config.Config, svr *gin.Engine, mc MelodyChatConn, msgSubscriber *MessageSubscriber, userSvc UserService, msgSvc MessageService, chanSvc ChannelService, forwardSvc ForwardService) *HttpServer {
+func NewHttpServer(name string, logger common.HttpLogrus, config *config.Config, svr *gin.Engine, mc MelodyChatConn, msgSubscriber *MessageSubscriber, userSvc UserService, msgSvc MessageService, chanSvc ChannelService, forwardSvc ForwardService) *HttpServer {
 	initJWT(config)
 
 	return &HttpServer{
@@ -83,7 +76,6 @@ func NewHttpServer(name string, logger common.HttpLog, config *config.Config, sv
 		msgSvc:        msgSvc,
 		chanSvc:       chanSvc,
 		forwardSvc:    forwardSvc,
-		serveSwag:     config.Chat.Http.Server.Swag,
 	}
 }
 
@@ -92,14 +84,6 @@ func initJWT(config *config.Config) {
 	common.JwtExpirationSecond = config.Chat.JWT.ExpirationSecond
 }
 
-// @title           Chat Service Swagger API
-// @version         2.0
-// @description     Chat service API
-
-// @contact.name   Ming Hsu
-// @contact.email  minghsu0107@gmail.com
-
-// @BasePath  /api
 func (r *HttpServer) RegisterRoutes() {
 	r.msgSubscriber.RegisterHandler()
 
@@ -129,10 +113,6 @@ func (r *HttpServer) RegisterRoutes() {
 	r.mc.HandleMessage(r.HandleChatOnMessage)
 	r.mc.HandleConnect(r.HandleChatOnConnect)
 	r.mc.HandleClose(r.HandleChatOnClose)
-
-	if r.serveSwag {
-		chatGroup.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler, ginSwagger.InstanceName(doc.SwaggerInfochat.InfoInstanceName)))
-	}
 }
 
 func (r *HttpServer) Run() {
@@ -142,21 +122,20 @@ func (r *HttpServer) Run() {
 			Addr:    addr,
 			Handler: common.NewOtelHttpHandler(r.svr, r.name+"_http"),
 		}
-		r.logger.Info("http server listening", slog.String("addr", addr))
+		r.logger.Infoln("http server listening on ", addr)
 		err := r.httpServer.ListenAndServe()
 		if err != nil && err != http.ErrServerClosed {
-			r.logger.Error(err.Error())
-			os.Exit(1)
+			r.logger.Fatal(err)
 		}
 	}()
 	go func() {
 		err := r.msgSubscriber.Run()
 		if err != nil {
-			r.logger.Error(err.Error())
-			os.Exit(1)
+			r.logger.Fatal(err)
 		}
 	}()
 }
+
 func (r *HttpServer) GracefulStop(ctx context.Context) error {
 	err := MelodyChat.Close()
 	if err != nil {

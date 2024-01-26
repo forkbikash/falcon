@@ -7,19 +7,17 @@ import (
 
 	"github.com/ThreeDotsLabs/watermill"
 	"github.com/ThreeDotsLabs/watermill/message"
+	"github.com/forkbikash/chat-backend/pkg/common"
+	"github.com/forkbikash/chat-backend/pkg/config"
 	"github.com/gocql/gocql"
-	"github.com/minghsu0107/go-random-chat/pkg/common"
-	"github.com/minghsu0107/go-random-chat/pkg/config"
 
+	"github.com/forkbikash/chat-backend/pkg/transport"
+	forwarderpb "github.com/forkbikash/chat-backend/proto/forwarder"
+	userpb "github.com/forkbikash/chat-backend/proto/user"
 	"github.com/go-kit/kit/endpoint"
-	"github.com/minghsu0107/go-random-chat/pkg/transport"
-	forwarderpb "github.com/minghsu0107/go-random-chat/proto/forwarder"
-	userpb "github.com/minghsu0107/go-random-chat/proto/user"
 )
 
-var (
-	MessagePubTopic = "rc.msg.pub"
-)
+var MessagePubTopic = "rc.msg.pub"
 
 type UserRepo interface {
 	AddUserToChannel(ctx context.Context, channelID uint64, userID uint64) error
@@ -61,6 +59,7 @@ func NewUserRepoImpl(s *gocql.Session, userConn *UserClientConn) *UserRepoImpl {
 		),
 	}
 }
+
 func (repo *UserRepoImpl) AddUserToChannel(ctx context.Context, channelID uint64, userID uint64) error {
 	if err := repo.s.Query("INSERT INTO channels (id, user_id) VALUES (?, ?)",
 		channelID, userID).WithContext(ctx).Exec(); err != nil {
@@ -68,6 +67,7 @@ func (repo *UserRepoImpl) AddUserToChannel(ctx context.Context, channelID uint64
 	}
 	return nil
 }
+
 func (repo *UserRepoImpl) GetUserByID(ctx context.Context, userID uint64) (*User, error) {
 	res, err := repo.getUser(ctx, &userpb.GetUserRequest{
 		UserId: userID,
@@ -84,6 +84,7 @@ func (repo *UserRepoImpl) GetUserByID(ctx context.Context, userID uint64) (*User
 		Name: pbUser.User.Name,
 	}, nil
 }
+
 func (repo *UserRepoImpl) GetChannelUserIDs(ctx context.Context, channelID uint64) ([]uint64, error) {
 	iter := repo.s.Query("SELECT user_id FROM channels WHERE id = ?", channelID).WithContext(ctx).Idempotent(true).Iter()
 	var userIDs []uint64
@@ -134,6 +135,7 @@ func (repo *MessageRepoImpl) InsertMessage(ctx context.Context, msg *Message) er
 	}
 	return repo.s.Query("UPDATE chanmsg_counters SET msgnum = msgnum + 1 WHERE channel_id = ?", msg.ChannelID).WithContext(ctx).Exec()
 }
+
 func (repo *MessageRepoImpl) MarkMessageSeen(ctx context.Context, channelID, messageID uint64) error {
 	if err := repo.s.Query("UPDATE messages SET seen = ? WHERE channel_id = ? AND id = ?", true, channelID, messageID).
 		WithContext(ctx).Idempotent(true).Exec(); err != nil {
@@ -141,12 +143,14 @@ func (repo *MessageRepoImpl) MarkMessageSeen(ctx context.Context, channelID, mes
 	}
 	return nil
 }
+
 func (repo *MessageRepoImpl) PublishMessage(ctx context.Context, msg *Message) error {
 	return repo.p.Publish(MessagePubTopic, message.NewMessage(
 		watermill.NewUUID(),
 		msg.Encode(),
 	))
 }
+
 func (repo *MessageRepoImpl) ListMessages(ctx context.Context, channelID uint64, pageStateBase64 string) ([]*Message, string, error) {
 	var messages []*Message
 	pageState, err := b64.URLEncoding.DecodeString(pageStateBase64)
@@ -201,6 +205,7 @@ func (repo *ChannelRepoImpl) CreateChannel(ctx context.Context, channelID uint64
 		AccessToken: accessToken,
 	}, nil
 }
+
 func (repo *ChannelRepoImpl) DeleteChannel(ctx context.Context, channelID uint64) error {
 	if err := repo.s.Query("DELETE FROM channels WHERE id = ?", channelID).
 		WithContext(ctx).Exec(); err != nil {

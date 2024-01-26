@@ -5,8 +5,8 @@ import (
 	"encoding/json"
 	"strconv"
 
-	"github.com/minghsu0107/go-random-chat/pkg/common"
-	"github.com/minghsu0107/go-random-chat/pkg/infra"
+	"github.com/forkbikash/chat-backend/pkg/common"
+	"github.com/forkbikash/chat-backend/pkg/infra"
 )
 
 var (

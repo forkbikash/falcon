@@ -1,10 +1,15 @@
 #!/bin/sh
+# common envs
+# for linux
 export DOCKER_DEFAULT_PLATFORM=linux/amd64
+
+# export DOCKER_DEFAULT_PLATFORM=linux/arm64/v8
 
 export REDIS_PASSWORD=pass.123
 export JWT_SECRET=mysecret
 export USER_OAUTH_GOOGLE_CLIENTID=xxx.apps.googleusercontent.com
 export USER_OAUTH_GOOGLE_CLIENTSECRET=xxx
+
 
 addHost() {
     if grep -q "minio" /etc/hosts; then
@@ -18,7 +23,8 @@ case "$1" in
     "add-host")
         addHost;;
     "start")
-        docker-compose up -d --scale random-chat=3;;
+        # docker-compose up --scale chat-backend=3;;
+        docker-compose up;;
     "stop")
         docker-compose stop;;
     "clean")

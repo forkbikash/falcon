@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/ThreeDotsLabs/watermill/message"
-	"github.com/minghsu0107/go-random-chat/pkg/config"
+	"github.com/forkbikash/chat-backend/pkg/config"
 	"gopkg.in/olahol/melody.v1"
 )
 
@@ -34,7 +34,7 @@ func (s *MessageSubscriber) HandleMessage(msg *message.Message) error {
 
 func (s *MessageSubscriber) RegisterHandler() {
 	s.router.AddNoPublisherHandler(
-		"randomchat_message_handler",
+		"chatbackend_message_handler",
 		s.subscriberID,
 		s.sub,
 		s.HandleMessage,

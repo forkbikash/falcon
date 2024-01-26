@@ -7,7 +7,6 @@ chat:
     server:
       port: "80"
       maxConn: 200
-      swag: true
   grpc:
     server:
       port: "4000"
@@ -28,13 +27,12 @@ chat:
 forwarder:
   grpc:
     server:
-      port: "4002" 
+      port: "4002"
 match:
   http:
     server:
       port: "80"
       maxConn: 200
-      swag: true
   grpc:
     client:
       chat:
@@ -45,7 +43,6 @@ uploader:
   http:
     server:
       port: "80"
-      swag: true
       maxBodyByte: 67108864
       maxMemoryByte: 16777216
   s3:
@@ -63,7 +60,6 @@ user:
   http:
     server:
       port: "80"
-      swag: true
   grpc:
     server:
       port: "4001"
@@ -90,7 +86,7 @@ cassandra:
   port: 9042
   user: cassandra
   password: cassandra
-  keyspace: randomchat
+  keyspace: chatbackend
 redis:
   password: pass.123
   addrs: redis-node-0:6379,redis-node-1:6379,redis-node-2:6379
@@ -104,3 +100,5 @@ observability:
     port: "8080"
   tracing:
     jaegerUrl: "http://localhost:14268/api/traces"
+logging:
+  level: error

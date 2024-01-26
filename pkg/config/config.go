@@ -17,6 +17,7 @@ type Config struct {
 	Cassandra     *CassandraConfig     `mapstructure:"cassandra"`
 	Redis         *RedisConfig         `mapstructure:"redis"`
 	Observability *ObservabilityConfig `mapstructure:"observability"`
+	Logging       *LoggingConfig       `mapstructure:"logging"`
 }
 
 type WebConfig struct {
@@ -32,7 +33,6 @@ type ChatConfig struct {
 		Server struct {
 			Port    string
 			MaxConn int64
-			Swag    bool
 		}
 	}
 	Grpc struct {
@@ -75,7 +75,6 @@ type MatchConfig struct {
 		Server struct {
 			Port    string
 			MaxConn int64
-			Swag    bool
 		}
 	}
 	Grpc struct {
@@ -99,7 +98,6 @@ type UploaderConfig struct {
 	Http struct {
 		Server struct {
 			Port          string
-			Swag          bool
 			MaxBodyByte   int64
 			MaxMemoryByte int64
 		}
@@ -127,7 +125,6 @@ type UserConfig struct {
 	Http struct {
 		Server struct {
 			Port string
-			Swag bool
 		}
 	}
 	Grpc struct {
@@ -181,12 +178,15 @@ type ObservabilityConfig struct {
 	}
 }
 
+type LoggingConfig struct {
+	Level string
+}
+
 func setDefault() {
 	viper.SetDefault("web.http.server.port", "5000")
 
 	viper.SetDefault("chat.http.server.port", "5001")
 	viper.SetDefault("chat.http.server.maxConn", 200)
-	viper.SetDefault("chat.http.server.swag", false)
 	viper.SetDefault("chat.grpc.server.port", "4000")
 	viper.SetDefault("chat.grpc.client.user.endpoint", "localhost:4001")
 	viper.SetDefault("chat.grpc.client.forwarder.endpoint", "localhost:4002")
@@ -199,12 +199,10 @@ func setDefault() {
 
 	viper.SetDefault("match.http.server.port", "5002")
 	viper.SetDefault("match.http.server.maxConn", 200)
-	viper.SetDefault("match.http.server.swag", false)
 	viper.SetDefault("match.grpc.client.chat.endpoint", "localhost:4000")
 	viper.SetDefault("match.grpc.client.user.endpoint", "localhost:4001")
 
 	viper.SetDefault("uploader.http.server.port", "5003")
-	viper.SetDefault("uploader.http.server.swag", false)
 	viper.SetDefault("uploader.http.server.maxBodyByte", "67108864")   // 64MB
 	viper.SetDefault("uploader.http.server.maxMemoryByte", "16777216") // 16MB
 	viper.SetDefault("uploader.s3.endpoint", "http://localhost:9000")
@@ -217,7 +215,6 @@ func setDefault() {
 	viper.SetDefault("uploader.rateLimit.channelUpload.burst", 50)
 
 	viper.SetDefault("user.http.server.port", "5004")
-	viper.SetDefault("user.http.server.swag", false)
 	viper.SetDefault("user.grpc.server.port", "4001")
 	viper.SetDefault("user.oauth.cookie.maxAge", 3600)
 	viper.SetDefault("user.oauth.cookie.path", "/")
@@ -239,7 +236,7 @@ func setDefault() {
 	viper.SetDefault("cassandra.port", 9042)
 	viper.SetDefault("cassandra.user", "cassandra")
 	viper.SetDefault("cassandra.password", "cassandra")
-	viper.SetDefault("cassandra.keyspace", "randomchat")
+	viper.SetDefault("cassandra.keyspace", "chatbackend")
 
 	viper.SetDefault("redis.password", "")
 	viper.SetDefault("redis.addrs", "localhost:6379")
@@ -251,6 +248,8 @@ func setDefault() {
 
 	viper.SetDefault("observability.prometheus.port", "8080")
 	viper.SetDefault("observability.tracing.jaegerUrl", "")
+
+	viper.SetDefault("logging.level", "info")
 }
 
 func NewConfig() (*Config, error) {

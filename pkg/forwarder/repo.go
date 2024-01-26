@@ -6,14 +6,12 @@ import (
 
 	"github.com/ThreeDotsLabs/watermill"
 	"github.com/ThreeDotsLabs/watermill/message"
-	"github.com/minghsu0107/go-random-chat/pkg/chat"
-	"github.com/minghsu0107/go-random-chat/pkg/common"
-	"github.com/minghsu0107/go-random-chat/pkg/infra"
+	"github.com/forkbikash/chat-backend/pkg/chat"
+	"github.com/forkbikash/chat-backend/pkg/common"
+	"github.com/forkbikash/chat-backend/pkg/infra"
 )
 
-var (
-	forwardPrefix = "rc:forward"
-)
+var forwardPrefix = "rc:forward"
 
 type Subscribers map[string]struct{}
 

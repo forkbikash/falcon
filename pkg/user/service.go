@@ -10,7 +10,7 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/minghsu0107/go-random-chat/pkg/common"
+	"github.com/forkbikash/chat-backend/pkg/common"
 )
 
 const oauthGoogleUrlAPI = "https://www.googleapis.com/oauth2/v3/userinfo?access_token="

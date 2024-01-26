@@ -5,23 +5,23 @@
 package wire
 
 import (
+	"github.com/forkbikash/chat-backend/pkg/chat"
+	"github.com/forkbikash/chat-backend/pkg/common"
+	"github.com/forkbikash/chat-backend/pkg/config"
+	"github.com/forkbikash/chat-backend/pkg/forwarder"
+	"github.com/forkbikash/chat-backend/pkg/infra"
+	"github.com/forkbikash/chat-backend/pkg/match"
+	"github.com/forkbikash/chat-backend/pkg/uploader"
+	"github.com/forkbikash/chat-backend/pkg/user"
+	"github.com/forkbikash/chat-backend/pkg/web"
 	"github.com/google/wire"
-	"github.com/minghsu0107/go-random-chat/pkg/chat"
-	"github.com/minghsu0107/go-random-chat/pkg/common"
-	"github.com/minghsu0107/go-random-chat/pkg/config"
-	"github.com/minghsu0107/go-random-chat/pkg/forwarder"
-	"github.com/minghsu0107/go-random-chat/pkg/infra"
-	"github.com/minghsu0107/go-random-chat/pkg/match"
-	"github.com/minghsu0107/go-random-chat/pkg/uploader"
-	"github.com/minghsu0107/go-random-chat/pkg/user"
-	"github.com/minghsu0107/go-random-chat/pkg/web"
 )
 
 func InitializeWebServer(name string) (*common.Server, error) {
 	wire.Build(
 		config.NewConfig,
 		common.NewObservabilityInjector,
-		common.NewHttpLog,
+		common.NewHttpLogrus,
 
 		web.NewGinServer,
 
@@ -40,8 +40,8 @@ func InitializeChatServer(name string) (*common.Server, error) {
 	wire.Build(
 		config.NewConfig,
 		common.NewObservabilityInjector,
-		common.NewHttpLog,
-		common.NewGrpcLog,
+		common.NewHttpLogrus,
+		common.NewGrpcLogrus,
 
 		infra.NewRedisClient,
 		infra.NewRedisCacheImpl,
@@ -106,7 +106,7 @@ func InitializeForwarderServer(name string) (*common.Server, error) {
 	wire.Build(
 		config.NewConfig,
 		common.NewObservabilityInjector,
-		common.NewGrpcLog,
+		common.NewGrpcLogrus,
 
 		infra.NewRedisClient,
 		infra.NewRedisCacheImpl,
@@ -139,7 +139,7 @@ func InitializeMatchServer(name string) (*common.Server, error) {
 	wire.Build(
 		config.NewConfig,
 		common.NewObservabilityInjector,
-		common.NewHttpLog,
+		common.NewHttpLogrus,
 
 		infra.NewRedisClient,
 		infra.NewRedisCacheImpl,
@@ -185,7 +185,7 @@ func InitializeUploaderServer(name string) (*common.Server, error) {
 	wire.Build(
 		config.NewConfig,
 		common.NewObservabilityInjector,
-		common.NewHttpLog,
+		common.NewHttpLogrus,
 
 		infra.NewRedisClient,
 
@@ -208,8 +208,8 @@ func InitializeUserServer(name string) (*common.Server, error) {
 	wire.Build(
 		config.NewConfig,
 		common.NewObservabilityInjector,
-		common.NewHttpLog,
-		common.NewGrpcLog,
+		common.NewHttpLogrus,
+		common.NewGrpcLogrus,
 
 		infra.NewRedisClient,
 		infra.NewRedisCacheImpl,

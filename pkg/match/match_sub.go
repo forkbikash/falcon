@@ -2,9 +2,9 @@ package match
 
 import (
 	"context"
-	"log/slog"
 
 	"github.com/ThreeDotsLabs/watermill/message"
+	log "github.com/sirupsen/logrus"
 	"gopkg.in/olahol/melody.v1"
 )
 
@@ -34,7 +34,7 @@ func (s *MatchSubscriber) HandleMatchResult(msg *message.Message) error {
 
 func (s *MatchSubscriber) RegisterHandler() {
 	s.router.AddNoPublisherHandler(
-		"randomchat_match_result_handler",
+		"chatbackend_match_result_handler",
 		matchPubSubTopic,
 		s.sub,
 		s.HandleMatchResult,
@@ -58,7 +58,7 @@ func (s *MatchSubscriber) sendMatchResult(ctx context.Context, result *MatchResu
 		userID := uid.(uint64)
 		if (userID == result.PeerID) || (userID == result.UserID) {
 			if err := s.userSvc.AddUserToChannel(ctx, result.ChannelID, userID); err != nil {
-				slog.Error(err.Error())
+				log.Error(err)
 				return false
 			}
 			return true

@@ -1,5 +1,5 @@
-CREATE KEYSPACE randomchat WITH replication = {'class': 'SimpleStrategy', 'replication_factor' : 1};
-USE randomchat;
+CREATE KEYSPACE chatbackend WITH replication = {'class': 'SimpleStrategy', 'replication_factor' : 1};
+USE chatbackend;
 CREATE TABLE channels (
     id varint,
     user_id varint,

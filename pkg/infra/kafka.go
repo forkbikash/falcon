@@ -9,16 +9,14 @@ import (
 	"github.com/ThreeDotsLabs/watermill/components/metrics"
 	"github.com/ThreeDotsLabs/watermill/message"
 	"github.com/ThreeDotsLabs/watermill/message/router/middleware"
-	"github.com/minghsu0107/go-random-chat/pkg/common"
-	"github.com/minghsu0107/go-random-chat/pkg/config"
+	"github.com/forkbikash/chat-backend/pkg/common"
+	"github.com/forkbikash/chat-backend/pkg/config"
 	prom "github.com/prometheus/client_golang/prometheus"
 )
 
-var (
-	logger = watermill.NewStdLogger(
-		false,
-		false,
-	)
+var logger = watermill.NewStdLogger(
+	false,
+	false,
 )
 
 func NewKafkaPublisher(config *config.Config) (message.Publisher, error) {

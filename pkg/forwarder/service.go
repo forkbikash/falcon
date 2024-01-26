@@ -3,7 +3,7 @@ package forwarder
 import (
 	"context"
 
-	"github.com/minghsu0107/go-random-chat/pkg/chat"
+	"github.com/forkbikash/chat-backend/pkg/chat"
 )
 
 type ForwardService interface {

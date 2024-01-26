@@ -3,12 +3,12 @@ package transport
 import (
 	"context"
 	"fmt"
-	"log/slog"
 	"runtime/debug"
 	"time"
 
 	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
 
+	"github.com/forkbikash/chat-backend/pkg/common"
 	"github.com/go-kit/kit/circuitbreaker"
 	"github.com/go-kit/kit/endpoint"
 	"github.com/go-kit/kit/sd"
@@ -18,9 +18,9 @@ import (
 	"github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/logging"
 	"github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/recovery"
 	"github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/retry"
-	"github.com/minghsu0107/go-random-chat/pkg/common"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
+	log "github.com/sirupsen/logrus"
 	"github.com/sony/gobreaker"
 	"go.opentelemetry.io/otel/trace"
 	"google.golang.org/grpc"
@@ -30,28 +30,33 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-var (
-	ServiceIdHeader string = "Service-Id"
-)
+var ServiceIdHeader string = "Service-Id"
 
-func interceptorLogger(l common.GrpcLog) logging.Logger {
+func interceptorLogger(l log.FieldLogger) logging.Logger {
 	return logging.LoggerFunc(func(_ context.Context, lvl logging.Level, msg string, fields ...any) {
+		f := make(map[string]any, len(fields)/2)
+		i := logging.Fields(fields).Iterator()
+		for i.Next() {
+			k, v := i.At()
+			f[k] = v
+		}
+
 		switch lvl {
 		case logging.LevelDebug:
-			l.Debug(msg, fields...)
+			l.WithFields(f).Debug(msg)
 		case logging.LevelInfo:
-			l.Info(msg, fields...)
+			l.WithFields(f).Info(msg)
 		case logging.LevelWarn:
-			l.Warn(msg, fields...)
+			l.WithFields(f).Warn(msg)
 		case logging.LevelError:
-			l.Error(msg, fields...)
+			l.WithFields(f).Error(msg)
 		default:
 			panic(fmt.Sprintf("unknown level %v", lvl))
 		}
 	})
 }
 
-func InitializeGrpcServer(name string, logger common.GrpcLog) *grpc.Server {
+func InitializeGrpcServer(name string, logger common.GrpcLogrus) *grpc.Server {
 	opts := []grpc.ServerOption{
 		grpc.MaxRecvMsgSize(1024 * 1024 * 8), // increase to 8 MB (default: 4 MB)
 		grpc.KeepaliveEnforcementPolicy(keepalive.EnforcementPolicy{
@@ -95,7 +100,7 @@ func InitializeGrpcServer(name string, logger common.GrpcLog) *grpc.Server {
 	})
 	grpcPanicRecoveryHandler := func(p any) (err error) {
 		panicsTotal.Inc()
-		logger.Error("recovered from panic, stack: " + string(debug.Stack()))
+		logger.Errorf("recovered from panic, stack: %s", string(debug.Stack()))
 		return status.Errorf(codes.Internal, "%s", p)
 	}
 	logTraceID := func(ctx context.Context) logging.Fields {
@@ -165,10 +170,10 @@ func InitializeGrpcClient(svcHost string) (*grpc.ClientConn, error) {
 			otelgrpc.UnaryClientInterceptor(),
 			retry.UnaryClientInterceptor(retryOpts...),
 		),
-		//grpc.WithBlock(),
+		// grpc.WithBlock(),
 	)
 
-	slog.Info("connecting to grpc host: " + svcHost)
+	log.Infof("connecting to grpc host: %s", svcHost)
 	conn, err := grpc.DialContext(
 		ctx,
 		fmt.Sprintf("%s:///%s", scheme, svcHost),

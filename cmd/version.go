@@ -15,7 +15,7 @@ func init() {
 var versionCmd = &cobra.Command{
 	Use:   "version",
 	Short: "Print the current version",
-	Long:  `Print the current version of random chat`,
+	Long:  `Print the current version of chat`,
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println(Version)
 	},

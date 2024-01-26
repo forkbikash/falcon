@@ -9,33 +9,29 @@ SVCS=chat match uploader user
 
 VERSION=v0.0.0
 
-.PHONY: proto doc
+.PHONY: proto
 
 all: build test
 test:
 	$(GOTEST) -gcflags=-l -v -cover -coverpkg=./... -coverprofile=cover.out ./...
-build: dep doc
-	$(GOBUILD) -ldflags="-X github.com/minghsu0107/go-random-chat/cmd.Version=$(VERSION) -w -s" -o server ./randomchat.go
+build: dep
+	$(GOBUILD) -ldflags="-X github.com/forkbikash/chat-backend/cmd.Version=$(VERSION) -w -s" -o server ./chatbackend.go
 
 dep: wire
 	$(shell $(GOCMD) env GOPATH)/bin/wire ./internal/wire
 proto:
 	protoc proto/*/*.proto --go_out=plugins=grpc:.
-doc: swag
-	for svc in $(SVCS); do \
-		$(shell $(GOCMD) env GOPATH)/bin/swag init -g http.go -d pkg/$$svc -o docs/$$svc --instanceName $$svc --parseDependency --parseInternal; \
-	done
 
 wire:
 	GO111MODULE=on $(GOINSTALL) github.com/google/wire/cmd/wire@v0.4.0
-swag:
-	GO111MODULE=on $(GOINSTALL) github.com/swaggo/swag/cmd/swag@v1.8.12
 
-docker: docker-api docker-web
+docker: docker-api docker-web docker-reverse-proxy
 docker-api:
-	@docker build -f ./build/Dockerfile.api --build-arg VERSION=$(VERSION) -t minghsu0107/random-chat-api:kafka .
+	@docker build -f ./deployments/build/Dockerfile.api --build-arg VERSION=$(VERSION) -t forkbikash/chat-api:kafka .
 docker-web:
-	@docker build -f ./build/Dockerfile.web --build-arg VERSION=$(VERSION) -t minghsu0107/random-chat-web:kafka .
+	@docker build -f ./deployments/build/Dockerfile.web --build-arg VERSION=$(VERSION) -t forkbikash/chat-web:kafka .
+docker-reverse-proxy:
+	@docker build -f ./deployments/build/Dockerfile.nginx -t forkbikash/chat-reverse-proxy:kafka .
 clean:
 	$(GOCLEAN)
 	rm -f server

@@ -7,11 +7,11 @@ import (
 
 	"github.com/ThreeDotsLabs/watermill"
 	"github.com/ThreeDotsLabs/watermill/message"
+	"github.com/forkbikash/chat-backend/pkg/infra"
+	"github.com/forkbikash/chat-backend/pkg/transport"
+	chatpb "github.com/forkbikash/chat-backend/proto/chat"
+	userpb "github.com/forkbikash/chat-backend/proto/user"
 	"github.com/go-kit/kit/endpoint"
-	"github.com/minghsu0107/go-random-chat/pkg/infra"
-	"github.com/minghsu0107/go-random-chat/pkg/transport"
-	chatpb "github.com/minghsu0107/go-random-chat/proto/chat"
-	userpb "github.com/minghsu0107/go-random-chat/proto/user"
 )
 
 var (
@@ -138,6 +138,7 @@ type MatchingRepoImpl struct {
 func NewMatchingRepoImpl(r infra.RedisCache, p message.Publisher) *MatchingRepoImpl {
 	return &MatchingRepoImpl{r, p}
 }
+
 func (repo *MatchingRepoImpl) PopOrPushWaitList(ctx context.Context, userID uint64) (bool, uint64, error) {
 	match, peerIDStr, err := repo.r.ZPopMinOrAddOne(ctx, userWaitList, float64(time.Now().Unix()), userID)
 	if err != nil {
@@ -152,9 +153,11 @@ func (repo *MatchingRepoImpl) PopOrPushWaitList(ctx context.Context, userID uint
 	}
 	return true, peerID, nil
 }
+
 func (repo *MatchingRepoImpl) RemoveFromWaitList(ctx context.Context, userID uint64) error {
 	return repo.r.ZRemOne(ctx, userWaitList, userID)
 }
+
 func (repo *MatchingRepoImpl) PublishMatchResult(ctx context.Context, result *MatchResult) error {
 	return repo.p.Publish(matchPubSubTopic, message.NewMessage(
 		watermill.NewUUID(),

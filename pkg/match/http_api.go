@@ -5,8 +5,8 @@ import (
 	"errors"
 	"net/http"
 
+	"github.com/forkbikash/chat-backend/pkg/common"
 	"github.com/gin-gonic/gin"
-	"github.com/minghsu0107/go-random-chat/pkg/common"
 	"gopkg.in/olahol/melody.v1"
 )
 
@@ -31,12 +31,12 @@ func (r *HttpServer) Match(c *gin.Context) {
 			response(c, http.StatusNotFound, ErrUserNotFound)
 			return
 		}
-		r.logger.Error(err.Error())
+		r.logger.Error(err)
 		response(c, http.StatusInternalServerError, common.ErrServer)
 		return
 	}
 	if err := r.mm.HandleRequest(c.Writer, c.Request); err != nil {
-		r.logger.Error("upgrade websocket error: " + err.Error())
+		r.logger.Errorf("upgrade websocket error: %v", err)
 		response(c, http.StatusInternalServerError, common.ErrServer)
 		return
 	}
@@ -50,27 +50,29 @@ func (r *HttpServer) HandleMatchOnConnect(sess *melody.Session) {
 	}
 	err := r.initializeMatchSession(sess, userID)
 	if err != nil {
-		r.logger.Error(err.Error())
+		r.logger.Error(err)
 		return
 	}
 	ctx := context.Background()
 	matchResult, err := r.matchSvc.Match(ctx, userID)
 	if err != nil {
-		r.logger.Error(err.Error())
+		r.logger.Error(err)
 		return
 	}
 	if !matchResult.Matched {
 		return
 	}
 	if err := r.matchSvc.BroadcastMatchResult(ctx, matchResult); err != nil {
-		r.logger.Error(err.Error())
+		r.logger.Error(err)
 		return
 	}
 }
+
 func (r *HttpServer) initializeMatchSession(sess *melody.Session, userID uint64) error {
 	sess.Set(sessUidKey, userID)
 	return nil
 }
+
 func (r *HttpServer) HandleMatchOnClose(sess *melody.Session, i int, s string) error {
 	userID, ok := sess.Request.Context().Value(common.UserKey).(uint64)
 	if !ok {

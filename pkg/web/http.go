@@ -2,13 +2,11 @@ package web
 
 import (
 	"context"
-	"log/slog"
 	"net/http"
-	"os"
 
+	"github.com/forkbikash/chat-backend/pkg/common"
+	"github.com/forkbikash/chat-backend/pkg/config"
 	"github.com/gin-gonic/gin"
-	"github.com/minghsu0107/go-random-chat/pkg/common"
-	"github.com/minghsu0107/go-random-chat/pkg/config"
 	metrics "github.com/slok/go-http-metrics/metrics/prometheus"
 	prommiddleware "github.com/slok/go-http-metrics/middleware"
 	ginmiddleware "github.com/slok/go-http-metrics/middleware/gin"
@@ -16,13 +14,13 @@ import (
 
 type HttpServer struct {
 	name       string
-	logger     common.HttpLog
+	logger     common.HttpLogrus
 	svr        *gin.Engine
 	httpPort   string
 	httpServer *http.Server
 }
 
-func NewGinServer(name string, logger common.HttpLog) *gin.Engine {
+func NewGinServer(name string, logger common.HttpLogrus) *gin.Engine {
 	svr := gin.New()
 	svr.Use(gin.Recovery())
 	svr.Use(common.LoggingMiddleware(logger))
@@ -36,7 +34,7 @@ func NewGinServer(name string, logger common.HttpLog) *gin.Engine {
 	return svr
 }
 
-func NewHttpServer(name string, logger common.HttpLog, config *config.Config, svr *gin.Engine) *HttpServer {
+func NewHttpServer(name string, logger common.HttpLogrus, config *config.Config, svr *gin.Engine) *HttpServer {
 	return &HttpServer{
 		name:     name,
 		logger:   logger,
@@ -63,14 +61,14 @@ func (r *HttpServer) Run() {
 			Addr:    addr,
 			Handler: common.NewOtelHttpHandler(r.svr, r.name+"_http"),
 		}
-		r.logger.Info("http server listening", slog.String("addr", addr))
+		r.logger.Infoln("http server listening on ", addr)
 		err := r.httpServer.ListenAndServe()
 		if err != nil && err != http.ErrServerClosed {
-			r.logger.Error(err.Error())
-			os.Exit(1)
+			r.logger.Fatal(err)
 		}
 	}()
 }
+
 func (r *HttpServer) GracefulStop(ctx context.Context) error {
 	return r.httpServer.Shutdown(ctx)
 }

@@ -3,27 +3,20 @@ package uploader
 import (
 	"context"
 	"net/http"
-	"os"
 	"strconv"
 	"time"
-
-	"log/slog"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/credentials"
 	"github.com/aws/aws-sdk-go-v2/feature/s3/manager"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
+	"github.com/forkbikash/chat-backend/pkg/common"
+	"github.com/forkbikash/chat-backend/pkg/config"
 	"github.com/gin-gonic/gin"
-	"github.com/minghsu0107/go-random-chat/pkg/common"
-	"github.com/minghsu0107/go-random-chat/pkg/config"
 	"github.com/redis/go-redis/v9"
 	metrics "github.com/slok/go-http-metrics/metrics/prometheus"
 	prommiddleware "github.com/slok/go-http-metrics/middleware"
 	ginmiddleware "github.com/slok/go-http-metrics/middleware/gin"
-
-	doc "github.com/minghsu0107/go-random-chat/docs/uploader"
-	swaggerFiles "github.com/swaggo/files"
-	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
 type ChannelUploadRateLimiter struct {
@@ -43,7 +36,7 @@ func NewChannelUploadRateLimiter(rc redis.UniversalClient, config *config.Config
 
 type HttpServer struct {
 	name                     string
-	logger                   common.HttpLog
+	logger                   common.HttpLogrus
 	svr                      *gin.Engine
 	s3Endpoint               string
 	s3Bucket                 string
@@ -53,10 +46,9 @@ type HttpServer struct {
 	httpPort                 string
 	httpServer               *http.Server
 	channelUploadRateLimiter ChannelUploadRateLimiter
-	serveSwag                bool
 }
 
-func NewGinServer(name string, logger common.HttpLog, config *config.Config) *gin.Engine {
+func NewGinServer(name string, logger common.HttpLogrus, config *config.Config) *gin.Engine {
 	svr := gin.New()
 	svr.Use(gin.Recovery())
 	svr.Use(common.CorsMiddleware())
@@ -72,7 +64,7 @@ func NewGinServer(name string, logger common.HttpLog, config *config.Config) *gi
 	return svr
 }
 
-func NewHttpServer(name string, logger common.HttpLog, config *config.Config, svr *gin.Engine, channelUploadRateLimiter ChannelUploadRateLimiter) *HttpServer {
+func NewHttpServer(name string, logger common.HttpLogrus, config *config.Config, svr *gin.Engine, channelUploadRateLimiter ChannelUploadRateLimiter) *HttpServer {
 	s3Endpoint := config.Uploader.S3.Endpoint
 	s3Bucket := config.Uploader.S3.Bucket
 	creds := credentials.NewStaticCredentialsProvider(config.Uploader.S3.AccessKey, config.Uploader.S3.SecretKey, "")
@@ -103,7 +95,6 @@ func NewHttpServer(name string, logger common.HttpLog, config *config.Config, sv
 		presigner:                &Presigner{s3.NewPresignClient(s3Client), config.Uploader.S3.PresignLifetimeSecond},
 		httpPort:                 config.Uploader.Http.Server.Port,
 		channelUploadRateLimiter: channelUploadRateLimiter,
-		serveSwag:                config.Uploader.Http.Server.Swag,
 	}
 }
 
@@ -116,7 +107,7 @@ func (r *HttpServer) ChannelUploadRateLimit() gin.HandlerFunc {
 		}
 		allow, err := r.channelUploadRateLimiter.Allow(c.Request.Context(), strconv.FormatUint(channelID, 10))
 		if err != nil {
-			r.logger.Error(err.Error())
+			r.logger.Error(err)
 			c.AbortWithStatus(http.StatusInternalServerError)
 			return
 		}
@@ -128,14 +119,6 @@ func (r *HttpServer) ChannelUploadRateLimit() gin.HandlerFunc {
 	}
 }
 
-// @title           Uploader Service Swagger API
-// @version         2.0
-// @description     Uploader service API
-
-// @contact.name   Ming Hsu
-// @contact.email  minghsu0107@gmail.com
-
-// @BasePath  /api
 func (r *HttpServer) RegisterRoutes() {
 	uploaderGroup := r.svr.Group("/api/uploader")
 	{
@@ -152,9 +135,6 @@ func (r *HttpServer) RegisterRoutes() {
 			downloadGroup.GET("/presigned", r.GetPresignedDownload)
 		}
 	}
-	if r.serveSwag {
-		uploaderGroup.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler, ginSwagger.InstanceName(doc.SwaggerInfouploader.InfoInstanceName)))
-	}
 }
 
 func (r *HttpServer) Run() {
@@ -164,14 +144,14 @@ func (r *HttpServer) Run() {
 			Addr:    addr,
 			Handler: common.NewOtelHttpHandler(r.svr, r.name+"_http"),
 		}
-		r.logger.Info("http server listening", slog.String("addr", addr))
+		r.logger.Infoln("http server listening on ", addr)
 		err := r.httpServer.ListenAndServe()
 		if err != nil && err != http.ErrServerClosed {
-			r.logger.Error(err.Error())
-			os.Exit(1)
+			r.logger.Fatal(err)
 		}
 	}()
 }
+
 func (r *HttpServer) GracefulStop(ctx context.Context) error {
 	return r.httpServer.Shutdown(ctx)
 }

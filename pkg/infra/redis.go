@@ -6,15 +6,15 @@ import (
 	"errors"
 	"time"
 
-	"github.com/minghsu0107/go-random-chat/pkg/common"
-	"github.com/minghsu0107/go-random-chat/pkg/config"
+	"github.com/forkbikash/chat-backend/pkg/common"
+	"github.com/forkbikash/chat-backend/pkg/config"
 	"github.com/redis/go-redis/extra/redisotel/v9"
 	"github.com/redis/go-redis/v9"
 )
 
 var (
 	RedisClient redis.UniversalClient
-	//ErrRedisUnlockFail is redis unlock fail error
+	// ErrRedisUnlockFail is redis unlock fail error
 	ErrRedisUnlockFail = errors.New("redis unlock fail")
 	// ErrRedisPipelineCmdNotFound is redis command not found error
 	ErrRedisPipelineCmdNotFound = errors.New("redis pipeline command not found; supports only SET and DELETE")
@@ -226,6 +226,7 @@ func (rc *RedisCacheImpl) ZPopMinOrAddOne(ctx context.Context, key string, score
 	}
 	return (poppedMember != ""), poppedMember, nil
 }
+
 func (rc *RedisCacheImpl) ZRemOne(ctx context.Context, key string, member interface{}) error {
 	return rc.client.ZRem(ctx, key, member).Err()
 }

@@ -2,26 +2,19 @@ package match
 
 import (
 	"context"
-	"log/slog"
 	"net/http"
-	"os"
 
+	"github.com/forkbikash/chat-backend/pkg/common"
+	"github.com/forkbikash/chat-backend/pkg/config"
 	"github.com/gin-gonic/gin"
-	"github.com/minghsu0107/go-random-chat/pkg/common"
-	"github.com/minghsu0107/go-random-chat/pkg/config"
 	metrics "github.com/slok/go-http-metrics/metrics/prometheus"
 	prommiddleware "github.com/slok/go-http-metrics/middleware"
 	ginmiddleware "github.com/slok/go-http-metrics/middleware/gin"
 	"gopkg.in/olahol/melody.v1"
-
-	doc "github.com/minghsu0107/go-random-chat/docs/match"
-	swaggerFiles "github.com/swaggo/files"
-	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
 var (
-	sessUidKey = "sessuid"
-
+	sessUidKey  = "sessuid"
 	MelodyMatch MelodyMatchConn
 )
 
@@ -31,7 +24,7 @@ type MelodyMatchConn struct {
 
 type HttpServer struct {
 	name            string
-	logger          common.HttpLog
+	logger          common.HttpLogrus
 	svr             *gin.Engine
 	mm              MelodyMatchConn
 	httpPort        string
@@ -39,7 +32,6 @@ type HttpServer struct {
 	matchSubscriber *MatchSubscriber
 	userSvc         UserService
 	matchSvc        MatchingService
-	serveSwag       bool
 }
 
 func NewMelodyMatchConn() MelodyMatchConn {
@@ -49,7 +41,7 @@ func NewMelodyMatchConn() MelodyMatchConn {
 	return MelodyMatch
 }
 
-func NewGinServer(name string, logger common.HttpLog, config *config.Config) *gin.Engine {
+func NewGinServer(name string, logger common.HttpLogrus, config *config.Config) *gin.Engine {
 	svr := gin.New()
 	svr.Use(gin.Recovery())
 	svr.Use(common.CorsMiddleware())
@@ -65,7 +57,7 @@ func NewGinServer(name string, logger common.HttpLog, config *config.Config) *gi
 	return svr
 }
 
-func NewHttpServer(name string, logger common.HttpLog, config *config.Config, svr *gin.Engine, mm MelodyMatchConn, matchSubscriber *MatchSubscriber, userSvc UserService, matchSvc MatchingService) *HttpServer {
+func NewHttpServer(name string, logger common.HttpLogrus, config *config.Config, svr *gin.Engine, mm MelodyMatchConn, matchSubscriber *MatchSubscriber, userSvc UserService, matchSvc MatchingService) *HttpServer {
 	return &HttpServer{
 		name:            name,
 		logger:          logger,
@@ -75,7 +67,6 @@ func NewHttpServer(name string, logger common.HttpLog, config *config.Config, sv
 		matchSubscriber: matchSubscriber,
 		userSvc:         userSvc,
 		matchSvc:        matchSvc,
-		serveSwag:       config.Match.Http.Server.Swag,
 	}
 }
 
@@ -96,14 +87,6 @@ func (r *HttpServer) CookieAuth() gin.HandlerFunc {
 	}
 }
 
-// @title           Match Service Swagger API
-// @version         2.0
-// @description     Match service API
-
-// @contact.name   Ming Hsu
-// @contact.email  minghsu0107@gmail.com
-
-// @BasePath  /api
 func (r *HttpServer) RegisterRoutes() {
 	r.matchSubscriber.RegisterHandler()
 
@@ -116,10 +99,6 @@ func (r *HttpServer) RegisterRoutes() {
 
 	r.mm.HandleConnect(r.HandleMatchOnConnect)
 	r.mm.HandleClose(r.HandleMatchOnClose)
-
-	if r.serveSwag {
-		matchGroup.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler, ginSwagger.InstanceName(doc.SwaggerInfomatch.InfoInstanceName)))
-	}
 }
 
 func (r *HttpServer) Run() {
@@ -129,21 +108,20 @@ func (r *HttpServer) Run() {
 			Addr:    addr,
 			Handler: common.NewOtelHttpHandler(r.svr, r.name+"_http"),
 		}
-		r.logger.Info("http server listening", slog.String("addr", addr))
+		r.logger.Infoln("http server listening on ", addr)
 		err := r.httpServer.ListenAndServe()
 		if err != nil && err != http.ErrServerClosed {
-			r.logger.Error(err.Error())
-			os.Exit(1)
+			r.logger.Fatal(err)
 		}
 	}()
 	go func() {
 		err := r.matchSubscriber.Run()
 		if err != nil {
-			r.logger.Error(err.Error())
-			os.Exit(1)
+			r.logger.Fatal(err)
 		}
 	}()
 }
+
 func (r *HttpServer) GracefulStop(ctx context.Context) error {
 	err := MelodyMatch.Close()
 	if err != nil {

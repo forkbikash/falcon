@@ -4,8 +4,8 @@ import (
 	"context"
 	"strconv"
 
-	"github.com/minghsu0107/go-random-chat/pkg/common"
-	"github.com/minghsu0107/go-random-chat/pkg/infra"
+	"github.com/forkbikash/chat-backend/pkg/common"
+	"github.com/forkbikash/chat-backend/pkg/infra"
 )
 
 var (
@@ -43,6 +43,7 @@ type UserRepoCacheImpl struct {
 func NewUserRepoCacheImpl(r infra.RedisCache, userRepo UserRepo) *UserRepoCacheImpl {
 	return &UserRepoCacheImpl{r, userRepo}
 }
+
 func (cache *UserRepoCacheImpl) AddUserToChannel(ctx context.Context, channelID uint64, userID uint64) error {
 	if err := cache.userRepo.AddUserToChannel(ctx, channelID, userID); err != nil {
 		return nil
@@ -50,9 +51,11 @@ func (cache *UserRepoCacheImpl) AddUserToChannel(ctx context.Context, channelID 
 	key := constructKey(channelUsersPrefix, channelID)
 	return cache.r.HSet(ctx, key, strconv.FormatUint(userID, 10), 1)
 }
+
 func (cache *UserRepoCacheImpl) GetUserByID(ctx context.Context, userID uint64) (*User, error) {
 	return cache.userRepo.GetUserByID(ctx, userID)
 }
+
 func (cache *UserRepoCacheImpl) IsChannelUserExist(ctx context.Context, channelID, userID uint64) (bool, error) {
 	key := constructKey(channelUsersPrefix, channelID)
 	var dummy int
@@ -85,6 +88,7 @@ func (cache *UserRepoCacheImpl) IsChannelUserExist(ctx context.Context, channelI
 	}
 	return channelUserExist, nil
 }
+
 func (cache *UserRepoCacheImpl) GetChannelUserIDs(ctx context.Context, channelID uint64) ([]uint64, error) {
 	key := constructKey(channelUsersPrefix, channelID)
 	userMap, err := cache.r.HGetAll(ctx, key)
@@ -116,15 +120,18 @@ func (cache *UserRepoCacheImpl) GetChannelUserIDs(ctx context.Context, channelID
 	}
 	return userIDs, nil
 }
+
 func (cache *UserRepoCacheImpl) AddOnlineUser(ctx context.Context, channelID uint64, userID uint64) error {
 	key := constructKey(onlineUsersPrefix, channelID)
 	return cache.r.HSet(ctx, key, strconv.FormatUint(userID, 10), 1)
 }
+
 func (cache *UserRepoCacheImpl) DeleteOnlineUser(ctx context.Context, channelID, userID uint64) error {
 	key := constructKey(onlineUsersPrefix, channelID)
 	userKey := strconv.FormatUint(userID, 10)
 	return cache.r.HDel(ctx, key, userKey)
 }
+
 func (cache *UserRepoCacheImpl) GetOnlineUserIDs(ctx context.Context, channelID uint64) ([]uint64, error) {
 	key := constructKey(onlineUsersPrefix, channelID)
 	userMap, err := cache.r.HGetAll(ctx, key)
@@ -153,12 +160,15 @@ func NewMessageRepoCacheImpl(messageRepo MessageRepo) *MessageRepoCacheImpl {
 func (cache *MessageRepoCacheImpl) InsertMessage(ctx context.Context, msg *Message) error {
 	return cache.messageRepo.InsertMessage(ctx, msg)
 }
+
 func (cache *MessageRepoCacheImpl) MarkMessageSeen(ctx context.Context, channelID, messageID uint64) error {
 	return cache.messageRepo.MarkMessageSeen(ctx, channelID, messageID)
 }
+
 func (cache *MessageRepoCacheImpl) PublishMessage(ctx context.Context, msg *Message) error {
 	return cache.messageRepo.PublishMessage(ctx, msg)
 }
+
 func (cache *MessageRepoCacheImpl) ListMessages(ctx context.Context, channelID uint64, pageStateStr string) ([]*Message, string, error) {
 	return cache.messageRepo.ListMessages(ctx, channelID, pageStateStr)
 }
@@ -175,6 +185,7 @@ func NewChannelRepoCacheImpl(r infra.RedisCache, channelRepo ChannelRepo) *Chann
 func (cache *ChannelRepoCacheImpl) CreateChannel(ctx context.Context, channelID uint64) (*Channel, error) {
 	return cache.channelRepo.CreateChannel(ctx, channelID)
 }
+
 func (cache *ChannelRepoCacheImpl) DeleteChannel(ctx context.Context, channelID uint64) error {
 	if err := cache.channelRepo.DeleteChannel(ctx, channelID); err != nil {
 		return err

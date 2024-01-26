@@ -7,15 +7,15 @@
 package wire
 
 import (
-	"github.com/minghsu0107/go-random-chat/pkg/chat"
-	"github.com/minghsu0107/go-random-chat/pkg/common"
-	"github.com/minghsu0107/go-random-chat/pkg/config"
-	"github.com/minghsu0107/go-random-chat/pkg/forwarder"
-	"github.com/minghsu0107/go-random-chat/pkg/infra"
-	"github.com/minghsu0107/go-random-chat/pkg/match"
-	"github.com/minghsu0107/go-random-chat/pkg/uploader"
-	"github.com/minghsu0107/go-random-chat/pkg/user"
-	"github.com/minghsu0107/go-random-chat/pkg/web"
+	"github.com/forkbikash/chat-backend/pkg/chat"
+	"github.com/forkbikash/chat-backend/pkg/common"
+	"github.com/forkbikash/chat-backend/pkg/config"
+	"github.com/forkbikash/chat-backend/pkg/forwarder"
+	"github.com/forkbikash/chat-backend/pkg/infra"
+	"github.com/forkbikash/chat-backend/pkg/match"
+	"github.com/forkbikash/chat-backend/pkg/uploader"
+	"github.com/forkbikash/chat-backend/pkg/user"
+	"github.com/forkbikash/chat-backend/pkg/web"
 )
 
 // Injectors from wire.go:
@@ -25,12 +25,12 @@ func InitializeWebServer(name string) (*common.Server, error) {
 	if err != nil {
 		return nil, err
 	}
-	httpLog, err := common.NewHttpLog(configConfig)
+	httpLogrus, err := common.NewHttpLogrus(configConfig)
 	if err != nil {
 		return nil, err
 	}
-	engine := web.NewGinServer(name, httpLog)
-	httpServer := web.NewHttpServer(name, httpLog, configConfig, engine)
+	engine := web.NewGinServer(name, httpLogrus)
+	httpServer := web.NewHttpServer(name, httpLogrus, configConfig, engine)
 	router := web.NewRouter(httpServer)
 	infraCloser := web.NewInfraCloser()
 	observabilityInjector := common.NewObservabilityInjector(configConfig)
@@ -43,11 +43,11 @@ func InitializeChatServer(name string) (*common.Server, error) {
 	if err != nil {
 		return nil, err
 	}
-	httpLog, err := common.NewHttpLog(configConfig)
+	httpLogrus, err := common.NewHttpLogrus(configConfig)
 	if err != nil {
 		return nil, err
 	}
-	engine := chat.NewGinServer(name, httpLog, configConfig)
+	engine := chat.NewGinServer(name, httpLogrus, configConfig)
 	melodyChatConn := chat.NewMelodyChatConn(configConfig)
 	router, err := infra.NewBrokerRouter(name)
 	if err != nil {
@@ -97,12 +97,12 @@ func InitializeChatServer(name string) (*common.Server, error) {
 	}
 	forwardRepoImpl := chat.NewForwardRepoImpl(forwarderClientConn)
 	forwardServiceImpl := chat.NewForwardServiceImpl(forwardRepoImpl)
-	httpServer := chat.NewHttpServer(name, httpLog, configConfig, engine, melodyChatConn, messageSubscriber, userServiceImpl, messageServiceImpl, channelServiceImpl, forwardServiceImpl)
-	grpcLog, err := common.NewGrpcLog(configConfig)
+	httpServer := chat.NewHttpServer(name, httpLogrus, configConfig, engine, melodyChatConn, messageSubscriber, userServiceImpl, messageServiceImpl, channelServiceImpl, forwardServiceImpl)
+	grpcLogrus, err := common.NewGrpcLogrus(configConfig)
 	if err != nil {
 		return nil, err
 	}
-	grpcServer := chat.NewGrpcServer(name, grpcLog, configConfig, userServiceImpl, channelServiceImpl)
+	grpcServer := chat.NewGrpcServer(name, grpcLogrus, configConfig, userServiceImpl, channelServiceImpl)
 	chatRouter := chat.NewRouter(httpServer, grpcServer)
 	infraCloser := chat.NewInfraCloser()
 	observabilityInjector := common.NewObservabilityInjector(configConfig)
@@ -115,7 +115,7 @@ func InitializeForwarderServer(name string) (*common.Server, error) {
 	if err != nil {
 		return nil, err
 	}
-	grpcLog, err := common.NewGrpcLog(configConfig)
+	grpcLogrus, err := common.NewGrpcLogrus(configConfig)
 	if err != nil {
 		return nil, err
 	}
@@ -142,7 +142,7 @@ func InitializeForwarderServer(name string) (*common.Server, error) {
 	if err != nil {
 		return nil, err
 	}
-	grpcServer := forwarder.NewGrpcServer(name, grpcLog, configConfig, forwardServiceImpl, messageSubscriber)
+	grpcServer := forwarder.NewGrpcServer(name, grpcLogrus, configConfig, forwardServiceImpl, messageSubscriber)
 	forwarderRouter := forwarder.NewRouter(grpcServer)
 	infraCloser := forwarder.NewInfraCloser()
 	observabilityInjector := common.NewObservabilityInjector(configConfig)
@@ -155,11 +155,11 @@ func InitializeMatchServer(name string) (*common.Server, error) {
 	if err != nil {
 		return nil, err
 	}
-	httpLog, err := common.NewHttpLog(configConfig)
+	httpLogrus, err := common.NewHttpLogrus(configConfig)
 	if err != nil {
 		return nil, err
 	}
-	engine := match.NewGinServer(name, httpLog, configConfig)
+	engine := match.NewGinServer(name, httpLogrus, configConfig)
 	melodyMatchConn := match.NewMelodyMatchConn()
 	router, err := infra.NewBrokerRouter(name)
 	if err != nil {
@@ -195,7 +195,7 @@ func InitializeMatchServer(name string) (*common.Server, error) {
 	matchingRepoImpl := match.NewMatchingRepoImpl(redisCacheImpl, publisher)
 	channelRepoImpl := match.NewChannelRepoImpl(chatClientConn)
 	matchingServiceImpl := match.NewMatchingServiceImpl(matchingRepoImpl, channelRepoImpl)
-	httpServer := match.NewHttpServer(name, httpLog, configConfig, engine, melodyMatchConn, matchSubscriber, userServiceImpl, matchingServiceImpl)
+	httpServer := match.NewHttpServer(name, httpLogrus, configConfig, engine, melodyMatchConn, matchSubscriber, userServiceImpl, matchingServiceImpl)
 	matchRouter := match.NewRouter(httpServer)
 	infraCloser := match.NewInfraCloser()
 	observabilityInjector := common.NewObservabilityInjector(configConfig)
@@ -208,17 +208,17 @@ func InitializeUploaderServer(name string) (*common.Server, error) {
 	if err != nil {
 		return nil, err
 	}
-	httpLog, err := common.NewHttpLog(configConfig)
+	httpLogrus, err := common.NewHttpLogrus(configConfig)
 	if err != nil {
 		return nil, err
 	}
-	engine := uploader.NewGinServer(name, httpLog, configConfig)
+	engine := uploader.NewGinServer(name, httpLogrus, configConfig)
 	universalClient, err := infra.NewRedisClient(configConfig)
 	if err != nil {
 		return nil, err
 	}
 	channelUploadRateLimiter := uploader.NewChannelUploadRateLimiter(universalClient, configConfig)
-	httpServer := uploader.NewHttpServer(name, httpLog, configConfig, engine, channelUploadRateLimiter)
+	httpServer := uploader.NewHttpServer(name, httpLogrus, configConfig, engine, channelUploadRateLimiter)
 	router := uploader.NewRouter(httpServer)
 	infraCloser := uploader.NewInfraCloser()
 	observabilityInjector := common.NewObservabilityInjector(configConfig)
@@ -231,11 +231,11 @@ func InitializeUserServer(name string) (*common.Server, error) {
 	if err != nil {
 		return nil, err
 	}
-	httpLog, err := common.NewHttpLog(configConfig)
+	httpLogrus, err := common.NewHttpLogrus(configConfig)
 	if err != nil {
 		return nil, err
 	}
-	engine := user.NewGinServer(name, httpLog, configConfig)
+	engine := user.NewGinServer(name, httpLogrus, configConfig)
 	universalClient, err := infra.NewRedisClient(configConfig)
 	if err != nil {
 		return nil, err
@@ -247,12 +247,12 @@ func InitializeUserServer(name string) (*common.Server, error) {
 		return nil, err
 	}
 	userServiceImpl := user.NewUserServiceImpl(userRepoImpl, idGenerator)
-	httpServer := user.NewHttpServer(name, httpLog, configConfig, engine, userServiceImpl)
-	grpcLog, err := common.NewGrpcLog(configConfig)
+	httpServer := user.NewHttpServer(name, httpLogrus, configConfig, engine, userServiceImpl)
+	grpcLogrus, err := common.NewGrpcLogrus(configConfig)
 	if err != nil {
 		return nil, err
 	}
-	grpcServer := user.NewGrpcServer(name, grpcLog, configConfig, userServiceImpl)
+	grpcServer := user.NewGrpcServer(name, grpcLogrus, configConfig, userServiceImpl)
 	router := user.NewRouter(httpServer, grpcServer)
 	infraCloser := user.NewInfraCloser()
 	observabilityInjector := common.NewObservabilityInjector(configConfig)

@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/minghsu0107/go-random-chat/cmd"
+	"github.com/forkbikash/chat-backend/cmd"
 )
 
 func main() {

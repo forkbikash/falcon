@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/ThreeDotsLabs/watermill/message"
-	"github.com/minghsu0107/go-random-chat/pkg/chat"
+	"github.com/forkbikash/chat-backend/pkg/chat"
 )
 
 type MessageSubscriber struct {
@@ -31,7 +31,7 @@ func (s *MessageSubscriber) HandleMessage(msg *message.Message) error {
 
 func (s *MessageSubscriber) RegisterHandler() {
 	s.router.AddNoPublisherHandler(
-		"randomchat_message_forwarder",
+		"chatbackend_message_forwarder",
 		chat.MessagePubTopic,
 		s.sub,
 		s.HandleMessage,

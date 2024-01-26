@@ -1,0 +1,59 @@
+{
+	"go.delveConfig": {
+		"showLog": true
+	},
+	"[html]": {
+		"editor.suggest.insertMode": "replace",
+		"gitlens.codeLens.scopes": ["document"],
+		"editor.formatOnSave": true,
+		"editor.defaultFormatter": "esbenp.prettier-vscode"
+	},
+	"[go]": {
+		"editor.tabSize": 4,
+		"editor.defaultFormatter": "golang.go",
+		"editor.insertSpaces": true,
+		"editor.formatOnSave": true,
+		"editor.autoClosingQuotes": "languageDefined",
+		"editor.autoIndent": "full",
+		"editor.comments.insertSpace": true,
+		"editor.find.addExtraSpaceOnTop": true,
+		"editor.matchBrackets": "always",
+		"files.insertFinalNewline": true,
+		"editor.codeActionsOnSave": {
+			"source.organizeImports": "explicit",
+			"source.fixAll": "explicit"
+		},
+		"editor.suggest.snippetsPreventQuickSuggestions": false
+	},
+	"go.testTimeout": "3000s",
+	"[sql]": {
+		"editor.defaultFormatter": "mtxr.sqltools",
+		"editor.formatOnSave": true
+	},
+	"[yaml]": {
+		"editor.defaultFormatter": "esbenp.prettier-vscode",
+		"editor.formatOnSave": true
+	},
+	"[javascript]": {
+		"editor.defaultFormatter": "esbenp.prettier-vscode",
+		"editor.formatOnSave": true
+	},
+	"[json]": {
+		"editor.tabSize": 4,
+		"editor.defaultFormatter": "esbenp.prettier-vscode"
+	},
+	"editor.formatOnSave": true,
+	"gopls": {
+		"formatting.gofumpt": true
+	},
+	"debug.javascript.autoAttachFilter": "disabled",
+	"sqltools.format": {
+		"language": "sql",
+		"linesBetweenQueries": 2,
+		"reservedWordCase": "upper"
+	},
+	"files.associations": {
+		"**/database/migration/00010_bank_branch_seed.sql": "plaintext"
+	},
+	"go.testEnvFile": "${workspaceRoot}/config/dev.env"
+}
