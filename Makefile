@@ -25,13 +25,20 @@ proto:
 wire:
 	GO111MODULE=on $(GOINSTALL) github.com/google/wire/cmd/wire@v0.4.0
 
-docker: docker-api docker-web docker-reverse-proxy
-docker-api:
+docker-dev: docker-api-dev docker-web-dev docker-reverse-proxy-dev
+docker-prod: docker-api-prod docker-web-prod docker-reverse-proxy-prod
+docker-dev:
 	@docker build -f ./deployments/build/Dockerfile.api --build-arg VERSION=$(VERSION) -t forkbikash/chat-api:kafka .
-docker-web:
+docker-prod:
+	@docker build -f ./deployments/build/Dockerfile.api --build-arg VERSION=$(VERSION) -t forkbikash/chat-api:kafka .
+docker-web-dev:
 	@docker build -f ./deployments/build/Dockerfile.web --build-arg VERSION=$(VERSION) -t forkbikash/chat-web:kafka .
-docker-reverse-proxy:
-	@docker build -f ./deployments/build/Dockerfile.nginx -t forkbikash/chat-reverse-proxy:kafka .
+docker-web-prod:
+	@docker build -f ./deployments/build/Dockerfile.web --build-arg VERSION=$(VERSION) -t forkbikash/chat-web:kafka .
+docker-reverse-proxy-dev:
+	@docker build -f ./deployments/build/Dockerfile.dev.nginx -t forkbikash/chat-reverse-proxy:kafka .
+docker-reverse-proxy-prod:
+	@docker build -f ./deployments/build/Dockerfile.prod.nginx -t forkbikash/chat-reverse-proxy:kafka .
 clean:
 	$(GOCLEAN)
 	rm -f server

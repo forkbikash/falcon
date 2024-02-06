@@ -151,11 +151,13 @@ func (r *HttpServer) OAuthGoogleCallback(c *gin.Context) {
 	oauthState, err := common.GetCookie(c, common.OAuthStateCookieName)
 	if err != nil {
 		r.logger.Error(err)
+		// todo:later
 		c.Redirect(http.StatusTemporaryRedirect, "/")
 		return
 	}
 	if c.Query("state") != oauthState {
 		r.logger.Error("invalid oauth google state")
+		// todo:later
 		c.Redirect(http.StatusTemporaryRedirect, "/")
 		return
 	}
@@ -163,12 +165,14 @@ func (r *HttpServer) OAuthGoogleCallback(c *gin.Context) {
 	token, err := r.googleOauthConfig.Exchange(c.Request.Context(), c.Request.FormValue("code"))
 	if err != nil {
 		r.logger.Errorf("code exchange wrong: %v", err)
+		// todo:later
 		c.Redirect(http.StatusTemporaryRedirect, "/")
 		return
 	}
 	googleUser, err := r.userSvc.GetGoogleUser(c.Request.Context(), token.AccessToken)
 	if err != nil {
 		r.logger.Error(err)
+		// todo:later
 		c.Redirect(http.StatusTemporaryRedirect, "/")
 		return
 	}
@@ -180,6 +184,7 @@ func (r *HttpServer) OAuthGoogleCallback(c *gin.Context) {
 	})
 	if err != nil {
 		r.logger.Error(err)
+		// todo:later
 		c.Redirect(http.StatusTemporaryRedirect, "/")
 		return
 	}
@@ -191,5 +196,6 @@ func (r *HttpServer) OAuthGoogleCallback(c *gin.Context) {
 	}
 	common.SetAuthCookie(c, sid, r.authCookieConfig.MaxAge, r.authCookieConfig.Path, r.authCookieConfig.Domain)
 
+	// todo:later
 	c.Redirect(http.StatusTemporaryRedirect, "/")
 }

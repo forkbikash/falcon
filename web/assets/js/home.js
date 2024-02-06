@@ -13,7 +13,9 @@ var ws
 var isLogin = false
 async function getUserInfo() {
     return fetch(`/api/user/me`, {
-        method: 'GET'
+        method: 'GET',
+        // todo:later : needed when client and the backend have different origin
+        // credentials: "include",
     })
         .then((response) => {
             if (response.status !== 200) {
@@ -91,7 +93,9 @@ async function createUser(username) {
     }
     return fetch(`/api/user`, {
         body: JSON.stringify(data),
-        method: 'POST'
+        method: 'POST',
+        // todo:later : needed when client and the backend have different origin
+        // credentials: "include",
     })
         .then((response) => {
             if (response.status !== 201) {
@@ -110,6 +114,7 @@ function match() {
     } else {
         protocol = "ws:"
     }
+    // todo:later
     var matchUrl = protocol + "//" + window.location.host + "/api/match"
     ws = new WebSocket(matchUrl)
     ws.addEventListener('message', function (e) {

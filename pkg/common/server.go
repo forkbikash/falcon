@@ -43,9 +43,10 @@ func NewServer(name string, router Router, infraCloser InfraCloser, obsInjector 
 }
 
 func (s *Server) Serve() {
-	if err := s.obsInjector.Register(s.name); err != nil {
-		log.Fatal(err)
-	}
+	// todo:later
+	// if err := s.obsInjector.Register(s.name); err != nil {
+	// 	log.Fatal(err)
+	// }
 	s.router.Run()
 
 	done := make(chan bool, 1)

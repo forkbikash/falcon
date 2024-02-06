@@ -14,6 +14,7 @@ type IDGenerator interface {
 
 func NewSonyFlake() (IDGenerator, error) {
 	var st sonyflake.Settings
+	// todo:later : internet is required for sony flake
 	sf := sonyflake.NewSonyflake(st)
 	if sf == nil {
 		return nil, errors.New("sonyflake not created")

@@ -21,11 +21,23 @@ func GenerateStateOauthCookie(c *gin.Context, maxAge int, path, domain string) (
 		return "", fmt.Errorf("generate oauth state cookie error: %w", err)
 	}
 	state := base64.URLEncoding.EncodeToString(b)
+	// todo:later
 	c.SetCookie(OAuthStateCookieName, state, maxAge, path, domain, false, true)
 	return state, nil
 }
 
 func SetAuthCookie(c *gin.Context, sessonId string, maxAge int, path, domain string) {
+	// http.SetCookie(c.Writer, &http.Cookie{
+	// 	Name:     SessionIdCookieName,
+	// 	Value:    url.QueryEscape(sessonId),
+	// 	MaxAge:   maxAge,
+	// 	Path:     path,
+	// 	Domain:   domain,
+	// 	SameSite: http.SameSiteNoneMode,
+	// 	Secure:   false,
+	// 	HttpOnly: false,
+	// })
+	// todo:later
 	c.SetCookie(SessionIdCookieName, sessonId, maxAge, path, domain, false, true)
 }
 

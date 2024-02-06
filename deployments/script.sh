@@ -1,15 +1,6 @@
 #!/bin/sh
-# common envs
-# for linux
 export DOCKER_DEFAULT_PLATFORM=linux/amd64
-
 # export DOCKER_DEFAULT_PLATFORM=linux/arm64/v8
-
-export REDIS_PASSWORD=pass.123
-export JWT_SECRET=mysecret
-export USER_OAUTH_GOOGLE_CLIENTID=xxx.apps.googleusercontent.com
-export USER_OAUTH_GOOGLE_CLIENTSECRET=xxx
-
 
 addHost() {
     if grep -q "minio" /etc/hosts; then
@@ -23,13 +14,37 @@ case "$1" in
     "add-host")
         addHost;;
     "start")
-        # docker-compose up --scale chat-backend=3;;
-        docker-compose up;;
+        if [ "$2" = "dev" ]; then
+            docker-compose -f ./docker-compose.dev.yaml up
+        elif [ "$2" = "prod" ]; then
+            # docker-compose -f ./docker-compose.prod.yaml up --scale chat-backend=3;;
+            docker-compose -f ./docker-compose.prod.yaml up
+        else
+            echo "Invalid option for 'start'. Use 'dev' or 'prod'."
+            # exit 1
+        fi
+        ;;
     "stop")
-        docker-compose stop;;
+        if [ "$2" = "dev" ]; then
+            docker-compose -f ./docker-compose.dev.yaml stop
+        elif [ "$2" = "prod" ]; then
+            docker-compose -f ./docker-compose.prod.yaml stop
+        else
+            echo "Invalid option for 'stop'. Use 'dev' or 'prod'."
+            # exit 1
+        fi
+        ;;
     "clean")
-        docker-compose down -v;;
+        if [ "$2" = "dev" ]; then
+            docker-compose -f ./docker-compose.dev.yaml down -v
+        elif [ "$2" = "prod" ]; then
+            docker-compose -f ./docker-compose.prod.yaml down -v
+        else
+            echo "Invalid option for 'clean'. Use 'dev' or 'prod'."
+            # exit 1
+        fi
+        ;;
     *)
         echo "command should be 'add-host', 'start', 'stop', or 'clean'"
-        exit 1;;
+        # exit 1;;
 esac

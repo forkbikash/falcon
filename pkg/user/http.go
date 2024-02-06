@@ -3,6 +3,7 @@ package user
 import (
 	"context"
 	"net/http"
+	"runtime/debug"
 	"strings"
 
 	"github.com/forkbikash/chat-backend/pkg/common"
@@ -31,7 +32,7 @@ type HttpServer struct {
 func NewGinServer(name string, logger common.HttpLogrus, config *config.Config) *gin.Engine {
 	svr := gin.New()
 	svr.Use(gin.Recovery())
-	svr.Use(common.CorsMiddleware())
+	svr.Use(common.CorsMiddleware(config))
 	svr.Use(common.LoggingMiddleware(logger))
 
 	mdlw := prommiddleware.New(prommiddleware.Config{
@@ -114,6 +115,7 @@ func (r *HttpServer) GracefulStop(ctx context.Context) error {
 }
 
 func response(c *gin.Context, httpCode int, err error) {
+	debug.PrintStack()
 	message := err.Error()
 	c.JSON(httpCode, common.ErrResponse{
 		Message: message,

@@ -51,7 +51,7 @@ type HttpServer struct {
 func NewGinServer(name string, logger common.HttpLogrus, config *config.Config) *gin.Engine {
 	svr := gin.New()
 	svr.Use(gin.Recovery())
-	svr.Use(common.CorsMiddleware())
+	svr.Use(common.CorsMiddleware(config))
 	svr.Use(common.LoggingMiddleware(logger))
 	svr.Use(common.LimitBodySize(config.Uploader.Http.Server.MaxBodyByte))
 

@@ -99,7 +99,7 @@ type RedisPipelineCmd struct {
 
 func NewRedisClient(config *config.Config) (redis.UniversalClient, error) {
 	expiration = time.Duration(config.Redis.ExpirationHour) * time.Hour
-	RedisClient = redis.NewClusterClient(&redis.ClusterOptions{
+	RedisClient = redis.NewUniversalClient(&redis.UniversalOptions{
 		Addrs:          common.GetServerAddrs(config.Redis.Addrs),
 		Password:       config.Redis.Password,
 		ReadOnly:       true,

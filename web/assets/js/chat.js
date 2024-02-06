@@ -30,7 +30,9 @@ var ID2PICTURE = {}
 
 async function getUserInfo() {
     return fetch(`/api/user/me`, {
-        method: 'GET'
+        method: 'GET',
+        // todo:later : needed when client and the backend have different origin
+        // credentials: "include",
     })
         .then((response) => {
             if (response.status !== 200) {
@@ -65,6 +67,7 @@ async function start() {
         } else {
             protocol = "ws:"
         }
+        // todo:later
         var chatUrl = protocol + "//" + window.location.host + "/api/chat?uid=" + USER_ID + "&access_token=" + ACCESS_TOKEN
         connectWebSocket(chatUrl)
     }
@@ -175,6 +178,8 @@ function uploadFiles(files) {
     for (const file of files) {
         fetch(`/api/uploader/upload/presigned?ext=${getFileExtention(file.name)}`, {
             method: 'GET',
+            // todo:later : needed when client and the backend have different origin
+            // credentials: "include",
             headers: new Headers({
                 'Authorization': 'Bearer ' + ACCESS_TOKEN
             })
@@ -392,6 +397,8 @@ function sendBrowserNotification(msg) {
 async function getAllChannelUserNames() {
     return fetch(`/api/chat/users`, {
         method: 'GET',
+        // todo:later : needed when client and the backend have different origin
+        // credentials: "include",
         headers: new Headers({
             'Authorization': 'Bearer ' + ACCESS_TOKEN
         })
@@ -417,6 +424,8 @@ async function getAllChannelUserNames() {
 async function fetchMessages() {
     let response = await fetch(`/api/chat/channel/messages`, {
         method: 'GET',
+        // todo:later : needed when client and the backend have different origin
+        // credentials: "include",
         headers: new Headers({
             'Authorization': 'Bearer ' + ACCESS_TOKEN
         })
@@ -532,7 +541,11 @@ async function processMessage(m) {
 }
 
 async function setPeer(peerID) {
-    return fetch(`/api/user?uid=${peerID}`)
+    return fetch(`/api/user?uid=${peerID}` , {
+        method: 'GET',
+        // todo:later : needed when client and the backend have different origin
+        // credentials: "include",
+    })
         .then((response) => {
             if (response.status !== 200) {
                 throw Error(response.statusText)
@@ -555,6 +568,8 @@ async function setPeer(peerID) {
 async function updateOnlineUsers() {
     return fetch(`/api/chat/users/online`, {
         method: 'GET',
+        // todo:later : needed when client and the backend have different origin
+        // credentials: "include",
         headers: new Headers({
             'Authorization': 'Bearer ' + ACCESS_TOKEN
         })
@@ -609,6 +624,8 @@ async function updateOnlineUsers() {
 async function deleteChannel() {
     return fetch(`/api/chat/channel?delby=${USER_ID}`, {
         method: 'DELETE',
+        // todo:later : needed when client and the backend have different origin
+        // credentials: "include",
         headers: new Headers({
             'Authorization': 'Bearer ' + ACCESS_TOKEN
         })
@@ -714,6 +731,8 @@ async function getFileMessage(messageID, userID, side, fileName, fileURL, time, 
 async function getFileURL(objectKey) {
     let response = await fetch(`/api/uploader/download/presigned?okb64=${btoa(objectKey)}`, {
         method: 'GET',
+        // todo:later : needed when client and the backend have different origin
+        // credentials: "include",
         headers: new Headers({
             'Authorization': 'Bearer ' + ACCESS_TOKEN
         })

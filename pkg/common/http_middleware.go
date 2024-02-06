@@ -7,6 +7,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/forkbikash/chat-backend/pkg/config"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
@@ -30,19 +31,21 @@ func MaxAllowed(n int64) gin.HandlerFunc {
 		acquire()       // before request
 		defer release() // after request
 		c.Next()
-
 	}
 }
 
-func CorsMiddleware() gin.HandlerFunc {
-	config := cors.Config{
-		AllowAllOrigins:  true,
-		AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS"},
-		AllowHeaders:     []string{"Origin", "Content-Length", "Content-Type", JWTAuthHeader},
+func CorsMiddleware(config *config.Config) gin.HandlerFunc {
+	corsConfig := cors.Config{
+		AllowOrigins: []string{config.Common.Http.Server.Domain},
+		// AllowAllOrigins: true,
+		AllowMethods: []string{"GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS"},
+		AllowHeaders: []string{"Origin", "Content-Length", "Content-Type", JWTAuthHeader},
+		// todo:later : needed when client and the backend have different origin and we are using cookies
+		// AllowCredentials: true,
 		AllowCredentials: false,
 		MaxAge:           12 * time.Hour,
 	}
-	return cors.New(config)
+	return cors.New(corsConfig)
 }
 
 func LoggingMiddleware(logger HttpLogrus) gin.HandlerFunc {

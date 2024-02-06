@@ -58,7 +58,7 @@ services:
       CASSANDRA_PASSWORD: cassandrapass
       CASSANDRA_KEYSPACE: chatbackend
       REDIS_PASSWORD: ${REDIS_PASSWORD}
-      REDIS_ADDRS: redis-node-0:6379,redis-node-1:6379,redis-node-2:6379
+      REDIS_ADDRS: redis-node-0:6379,redis-node-1:6379
       REDIS_EXPIRATIONHOUR: "24"
       OBSERVABILITY_PROMETHEUS_PORT: "8080"
       OBSERVABILITY_TRACING_JAEGERURL: http://jaeger:14268/api/traces
@@ -78,7 +78,7 @@ services:
       KAFKA_ADDRS: kafka:9092
       KAFKA_VERSION: "3.0.1"
       REDIS_PASSWORD: ${REDIS_PASSWORD}
-      REDIS_ADDRS: redis-node-0:6379,redis-node-1:6379,redis-node-2:6379
+      REDIS_ADDRS: redis-node-0:6379,redis-node-1:6379
       REDIS_EXPIRATIONHOUR: "24"
       OBSERVABILITY_PROMETHEUS_PORT: "8080"
     depends_on:
@@ -100,7 +100,7 @@ services:
       KAFKA_ADDRS: kafka:9092
       KAFKA_VERSION: "3.0.1"
       REDIS_PASSWORD: ${REDIS_PASSWORD}
-      REDIS_ADDRS: redis-node-0:6379,redis-node-1:6379,redis-node-2:6379
+      REDIS_ADDRS: redis-node-0:6379,redis-node-1:6379
       REDIS_EXPIRATIONHOUR: "24"
       OBSERVABILITY_PROMETHEUS_PORT: "8080"
       OBSERVABILITY_TRACING_JAEGERURL: http://jaeger:14268/api/traces
@@ -125,7 +125,7 @@ services:
       UPLOADER_S3_ACCESSKEY: testaccesskey
       UPLOADER_S3_SECRETKEY: testsecret
       REDIS_PASSWORD: ${REDIS_PASSWORD}
-      REDIS_ADDRS: redis-node-0:6379,redis-node-1:6379,redis-node-2:6379
+      REDIS_ADDRS: redis-node-0:6379,redis-node-1:6379
       OBSERVABILITY_PROMETHEUS_PORT: "8080"
       OBSERVABILITY_TRACING_JAEGERURL: http://jaeger:14268/api/traces
   user:
@@ -143,7 +143,7 @@ services:
       USER_OAUTH_GOOGLE_CLIENTID: ${USER_OAUTH_GOOGLE_CLIENTID}
       USER_OAUTH_GOOGLE_CLIENTSECRET: ${USER_OAUTH_GOOGLE_CLIENTSECRET}
       REDIS_PASSWORD: ${REDIS_PASSWORD}
-      REDIS_ADDRS: redis-node-0:6379,redis-node-1:6379,redis-node-2:6379
+      REDIS_ADDRS: redis-node-0:6379,redis-node-1:6379
       REDIS_EXPIRATIONHOUR: "24"
       OBSERVABILITY_PROMETHEUS_PORT: "8080"
       OBSERVABILITY_TRACING_JAEGERURL: http://jaeger:14268/api/traces
@@ -201,30 +201,19 @@ services:
       - redis-cluster_data-0:/bitnami/redis/data
     environment:
       - "REDIS_PASSWORD=${REDIS_PASSWORD}"
-      - "REDIS_NODES=redis-node-0 redis-node-1 redis-node-2"
-
+      - "REDIS_NODES=redis-node-0 redis-node-1"
   redis-node-1:
     image: docker.io/bitnami/redis-cluster:7.0
     restart: always
     volumes:
       - redis-cluster_data-1:/bitnami/redis/data
-    environment:
-      - "REDIS_PASSWORD=${REDIS_PASSWORD}"
-      - "REDIS_NODES=redis-node-0 redis-node-1 redis-node-2"
-
-  redis-node-2:
-    image: docker.io/bitnami/redis-cluster:7.0
-    restart: always
-    volumes:
-      - redis-cluster_data-2:/bitnami/redis/data
     depends_on:
       - redis-node-0
-      - redis-node-1
     environment:
       - "REDIS_PASSWORD=${REDIS_PASSWORD}"
       - "REDISCLI_AUTH=${REDIS_PASSWORD}"
       - "REDIS_CLUSTER_REPLICAS=1"
-      - "REDIS_NODES=redis-node-0 redis-node-1 redis-node-2"
+      - "REDIS_NODES=redis-node-0 redis-node-1"
       - "REDIS_CLUSTER_CREATOR=yes"
   kafka:
     image: docker.io/bitnami/kafka:3.6
@@ -268,4 +257,3 @@ volumes:
   cassandra_data:
   redis-cluster_data-0:
   redis-cluster_data-1:
-  redis-cluster_data-2:

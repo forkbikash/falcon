@@ -7,6 +7,7 @@ import (
 )
 
 type Config struct {
+	Common        *CommonConfig        `mapstructure:"common"`
 	Web           *WebConfig           `mapstructure:"web"`
 	Chat          *ChatConfig          `mapstructure:"chat"`
 	Forwarder     *ForwarderConfig     `mapstructure:"forwarder"`
@@ -18,6 +19,14 @@ type Config struct {
 	Redis         *RedisConfig         `mapstructure:"redis"`
 	Observability *ObservabilityConfig `mapstructure:"observability"`
 	Logging       *LoggingConfig       `mapstructure:"logging"`
+}
+
+type CommonConfig struct {
+	Http struct {
+		Server struct {
+			Domain string
+		}
+	}
 }
 
 type WebConfig struct {
@@ -183,6 +192,7 @@ type LoggingConfig struct {
 }
 
 func setDefault() {
+	viper.SetDefault("common.http.server.domain", "http://localhost")
 	viper.SetDefault("web.http.server.port", "5000")
 
 	viper.SetDefault("chat.http.server.port", "5001")
@@ -218,6 +228,8 @@ func setDefault() {
 	viper.SetDefault("user.grpc.server.port", "4001")
 	viper.SetDefault("user.oauth.cookie.maxAge", 3600)
 	viper.SetDefault("user.oauth.cookie.path", "/")
+	// todo:later
+	// viper.SetDefault("user.oauth.cookie.domain", "")
 	viper.SetDefault("user.oauth.cookie.domain", "localhost")
 	viper.SetDefault("user.oauth.google.redirectUrl", "http://localhost/api/user/oauth2/google/callback")
 	viper.SetDefault("user.oauth.google.clientId", "")
@@ -225,6 +237,8 @@ func setDefault() {
 	viper.SetDefault("user.oauth.google.scopes", "https://www.googleapis.com/auth/userinfo.email,https://www.googleapis.com/auth/userinfo.profile")
 	viper.SetDefault("user.auth.cookie.maxAge", 86400)
 	viper.SetDefault("user.auth.cookie.path", "/")
+	// todo:later
+	// viper.SetDefault("user.auth.cookie.domain", "")
 	viper.SetDefault("user.auth.cookie.domain", "localhost")
 
 	viper.SetDefault("forwarder.grpc.server.port", "4002")
