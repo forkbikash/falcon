@@ -1,6 +1,5 @@
 #!/bin/sh
-export DOCKER_DEFAULT_PLATFORM=linux/amd64
-# export DOCKER_DEFAULT_PLATFORM=linux/arm64/v8
+# set -e
 
 addHost() {
     if grep -q "minio" /etc/hosts; then
@@ -15,10 +14,12 @@ case "$1" in
         addHost;;
     "start")
         if [ "$2" = "dev" ]; then
-            docker-compose -f ./docker-compose.dev.yaml up
+            source ../configs/dev.env
+            docker-compose -f ./docker-compose.dev.yaml --env-file ../configs/dev.env up
         elif [ "$2" = "prod" ]; then
-            # docker-compose -f ./docker-compose.prod.yaml up --scale chat-backend=3;;
-            docker-compose -f ./docker-compose.prod.yaml up
+            source ../configs/prod.env
+            # docker-compose -f ./docker-compose.prod.yaml --env-file ../configs/prod.env up --scale chat-backend=3;;
+            docker-compose -f ./docker-compose.prod.yaml --env-file ../configs/prod.env up
         else
             echo "Invalid option for 'start'. Use 'dev' or 'prod'."
             # exit 1

@@ -32,8 +32,8 @@ services:
       - --console-address
       - ":9001"
     environment:
-      MINIO_ROOT_USER: testaccesskey
-      MINIO_ROOT_PASSWORD: testsecret
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
       MINIO_API_ROOT_ACCESS: "on"
       # FQDN the MinIO Console should use for connecting to the MinIO Server
       MINIO_SERVER_URL: http://minio:9000
@@ -73,7 +73,7 @@ services:
     image: docker.io/bitnami/redis:7.2
     environment:
       - REDIS_DISABLE_COMMANDS=FLUSHDB,FLUSHALL
-      - REDIS_PASSWORD=pass.123
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
     ports:
       - "6379:6379"
     volumes:
@@ -112,8 +112,8 @@ services:
     environment:
       - CASSANDRA_SEEDS=cassandra
       - CASSANDRA_PASSWORD_SEEDER=yes
-      - CASSANDRA_USER=forkbikash
-      - CASSANDRA_PASSWORD=cassandrapass
+      - CASSANDRA_USER=${CASSANDRA_USER}
+      - CASSANDRA_PASSWORD=${CASSANDRA_PASSWORD}
 volumes:
   kafka_data:
     driver: local

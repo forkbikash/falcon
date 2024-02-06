@@ -27,9 +27,9 @@ wire:
 
 docker-dev: docker-api-dev docker-web-dev docker-reverse-proxy-dev
 docker-prod: docker-api-prod docker-web-prod docker-reverse-proxy-prod
-docker-dev:
+docker-api-dev:
 	@docker build -f ./deployments/build/Dockerfile.api --build-arg VERSION=$(VERSION) -t forkbikash/chat-api:kafka .
-docker-prod:
+docker-api-prod:
 	@docker build -f ./deployments/build/Dockerfile.api --build-arg VERSION=$(VERSION) -t forkbikash/chat-api:kafka .
 docker-web-dev:
 	@docker build -f ./deployments/build/Dockerfile.web --build-arg VERSION=$(VERSION) -t forkbikash/chat-web:kafka .

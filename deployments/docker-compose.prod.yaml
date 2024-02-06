@@ -3,11 +3,11 @@ services:
   reverse-proxy:
     image: forkbikash/chat-reverse-proxy:kafka
     restart: "always"
-    # mem_limit: 128m
-    # hostname: nginx
     ports:
       - "80:80"
       - "443:443"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     depends_on:
       - chat-backend
       - web
@@ -22,46 +22,45 @@ services:
     restart: always
     expose:
       - "80"
-    # ports:
-    #   - "80:80"
-    environment:
-      WEB_HTTP_SERVER_PORT: "80"
-      OBSERVABILITY_PROMETHEUS_PORT: "8080"
-      OBSERVABILITY_TRACING_JAEGERURL: http://jaeger:14268/api/traces
+    # environment:
+    #   WEB_HTTP_SERVER_PORT: "80"
+    #   OBSERVABILITY_PROMETHEUS_PORT: "8080"
+    #   OBSERVABILITY_TRACING_JAEGERURL: http://jaeger:14268/api/traces
+    env_file:
+      - ../configs/prod.env
   chat-backend:
     image: forkbikash/chat-api:kafka
     restart: always
     expose:
       - "80"
       - "4000"
-    # ports:
-    #   - "80:80"
-    #   - "4000:4000"
     command:
       - chat
-    environment:
-      CHAT_HTTP_SERVER_PORT: "80"
-      CHAT_HTTP_SERVER_MAXCONN: "200"
-      CHAT_GRPC_SERVER_PORT: "4000"
-      CHAT_GRPC_CLIENT_USER_ENDPOINT: "reverse-proxy:80"
-      CHAT_GRPC_CLIENT_FORWARDER_ENDPOINT: "reverse-proxy:80"
-      CHAT_MESSAGE_MAXNUM: "5000"
-      CHAT_MESSAGE_PAGINATIONNUM: "5000"
-      CHAT_MESSAGE_MAXSIZEBYTE: "4096"
-      CHAT_JWT_SECRET: ${JWT_SECRET}
-      CHAT_JWT_EXPIRATIONSECOND: "86400"
-      KAFKA_ADDRS: kafka:9092
-      KAFKA_VERSION: "3.0.1"
-      CASSANDRA_HOSTS: cassandra
-      CASSANDRA_PORT: "9042"
-      CASSANDRA_USER: forkbikash
-      CASSANDRA_PASSWORD: cassandrapass
-      CASSANDRA_KEYSPACE: chatbackend
-      REDIS_PASSWORD: ${REDIS_PASSWORD}
-      REDIS_ADDRS: redis-node-0:6379,redis-node-1:6379
-      REDIS_EXPIRATIONHOUR: "24"
-      OBSERVABILITY_PROMETHEUS_PORT: "8080"
-      OBSERVABILITY_TRACING_JAEGERURL: http://jaeger:14268/api/traces
+    # environment:
+    #   CHAT_HTTP_SERVER_PORT: "80"
+    #   CHAT_HTTP_SERVER_MAXCONN: "200"
+    #   CHAT_GRPC_SERVER_PORT: "4000"
+    #   CHAT_GRPC_CLIENT_USER_ENDPOINT: "reverse-proxy:80"
+    #   CHAT_GRPC_CLIENT_FORWARDER_ENDPOINT: "reverse-proxy:80"
+    #   CHAT_MESSAGE_MAXNUM: "5000"
+    #   CHAT_MESSAGE_PAGINATIONNUM: "5000"
+    #   CHAT_MESSAGE_MAXSIZEBYTE: "4096"
+    #   CHAT_JWT_SECRET: ${JWT_SECRET}
+    #   CHAT_JWT_EXPIRATIONSECOND: "86400"
+    #   KAFKA_ADDRS: kafka:9092
+    #   KAFKA_VERSION: "3.0.1"
+    #   CASSANDRA_HOSTS: cassandra
+    #   CASSANDRA_PORT: "9042"
+    #   CASSANDRA_USER: forkbikash
+    #   CASSANDRA_PASSWORD: cassandrapass
+    #   CASSANDRA_KEYSPACE: chatbackend
+    #   REDIS_PASSWORD: ${REDIS_PASSWORD}
+    #   REDIS_ADDRS: redis-node-0:6379,redis-node-1:6379
+    #   REDIS_EXPIRATIONHOUR: "24"
+    #   OBSERVABILITY_PROMETHEUS_PORT: "8080"
+    #   OBSERVABILITY_TRACING_JAEGERURL: http://jaeger:14268/api/traces
+    env_file:
+      - ../configs/prod.env
     depends_on:
       - kafka
   forwarder:
@@ -69,18 +68,18 @@ services:
     restart: always
     expose:
       - "4000"
-    # ports:
-    #   - "4000:4000"
     command:
       - forwarder
-    environment:
-      FORWARDER_GRPC_SERVER_PORT: "4000"
-      KAFKA_ADDRS: kafka:9092
-      KAFKA_VERSION: "3.0.1"
-      REDIS_PASSWORD: ${REDIS_PASSWORD}
-      REDIS_ADDRS: redis-node-0:6379,redis-node-1:6379
-      REDIS_EXPIRATIONHOUR: "24"
-      OBSERVABILITY_PROMETHEUS_PORT: "8080"
+    # environment:
+    #   FORWARDER_GRPC_SERVER_PORT: "4000"
+    #   KAFKA_ADDRS: kafka:9092
+    #   KAFKA_VERSION: "3.0.1"
+    #   REDIS_PASSWORD: ${REDIS_PASSWORD}
+    #   REDIS_ADDRS: redis-node-0:6379,redis-node-1:6379
+    #   REDIS_EXPIRATIONHOUR: "24"
+    #   OBSERVABILITY_PROMETHEUS_PORT: "8080"
+    env_file:
+      - ../configs/prod.env
     depends_on:
       - kafka
   match:
@@ -88,22 +87,22 @@ services:
     restart: always
     expose:
       - "80"
-    # ports:
-    #   - "80:80"
     command:
       - match
-    environment:
-      MATCH_HTTP_SERVER_PORT: "80"
-      MATCH_HTTP_SERVER_MAXCONN: "200"
-      MATCH_GRPC_CLIENT_CHAT_ENDPOINT: "reverse-proxy:80"
-      MATCH_GRPC_CLIENT_USER_ENDPOINT: "reverse-proxy:80"
-      KAFKA_ADDRS: kafka:9092
-      KAFKA_VERSION: "3.0.1"
-      REDIS_PASSWORD: ${REDIS_PASSWORD}
-      REDIS_ADDRS: redis-node-0:6379,redis-node-1:6379
-      REDIS_EXPIRATIONHOUR: "24"
-      OBSERVABILITY_PROMETHEUS_PORT: "8080"
-      OBSERVABILITY_TRACING_JAEGERURL: http://jaeger:14268/api/traces
+    # environment:
+    #   MATCH_HTTP_SERVER_PORT: "80"
+    #   MATCH_HTTP_SERVER_MAXCONN: "200"
+    #   MATCH_GRPC_CLIENT_CHAT_ENDPOINT: "reverse-proxy:80"
+    #   MATCH_GRPC_CLIENT_USER_ENDPOINT: "reverse-proxy:80"
+    #   KAFKA_ADDRS: kafka:9092
+    #   KAFKA_VERSION: "3.0.1"
+    #   REDIS_PASSWORD: ${REDIS_PASSWORD}
+    #   REDIS_ADDRS: redis-node-0:6379,redis-node-1:6379
+    #   REDIS_EXPIRATIONHOUR: "24"
+    #   OBSERVABILITY_PROMETHEUS_PORT: "8080"
+    #   OBSERVABILITY_TRACING_JAEGERURL: http://jaeger:14268/api/traces
+    env_file:
+      - ../configs/prod.env
   uploader:
     image: forkbikash/chat-api:kafka
     restart: always
@@ -111,42 +110,42 @@ services:
       - minio
     expose:
       - "80"
-    # ports:
-    #   - "80:80"
     command:
       - uploader
-    environment:
-      UPLOADER_HTTP_SERVER_PORT: "80"
-      UPLOADER_HTTP_SERVER_MAXBODYBYTE: "67108864"
-      UPLOADER_HTTP_SERVER_MAXMEMORYBYTE: "16777216"
-      UPLOADER_S3_ENDPOINT: http://minio:9000
-      UPLOADER_S3_REGION: us-east-1
-      UPLOADER_S3_BUCKET: myfilebucket
-      UPLOADER_S3_ACCESSKEY: testaccesskey
-      UPLOADER_S3_SECRETKEY: testsecret
-      REDIS_PASSWORD: ${REDIS_PASSWORD}
-      REDIS_ADDRS: redis-node-0:6379,redis-node-1:6379
-      OBSERVABILITY_PROMETHEUS_PORT: "8080"
-      OBSERVABILITY_TRACING_JAEGERURL: http://jaeger:14268/api/traces
+    # environment:
+    #   UPLOADER_HTTP_SERVER_PORT: "80"
+    #   UPLOADER_HTTP_SERVER_MAXBODYBYTE: "67108864"
+    #   UPLOADER_HTTP_SERVER_MAXMEMORYBYTE: "16777216"
+    #   UPLOADER_S3_ENDPOINT: http://minio:9000
+    #   UPLOADER_S3_REGION: us-east-1
+    #   UPLOADER_S3_BUCKET: myfilebucket
+    #   UPLOADER_S3_ACCESSKEY: testaccesskey
+    #   UPLOADER_S3_SECRETKEY: testsecret
+    #   REDIS_PASSWORD: ${REDIS_PASSWORD}
+    #   REDIS_ADDRS: redis-node-0:6379,redis-node-1:6379
+    #   OBSERVABILITY_PROMETHEUS_PORT: "8080"
+    #   OBSERVABILITY_TRACING_JAEGERURL: http://jaeger:14268/api/traces
+    env_file:
+      - ../configs/prod.env
   user:
     image: forkbikash/chat-api:kafka
     restart: always
     expose:
       - "80"
-    # ports:
-    #   - "80:80"
     command:
       - user
-    environment:
-      USER_HTTP_SERVER_PORT: "80"
-      USER_GRPC_SERVER_PORT: "4000"
-      USER_OAUTH_GOOGLE_CLIENTID: ${USER_OAUTH_GOOGLE_CLIENTID}
-      USER_OAUTH_GOOGLE_CLIENTSECRET: ${USER_OAUTH_GOOGLE_CLIENTSECRET}
-      REDIS_PASSWORD: ${REDIS_PASSWORD}
-      REDIS_ADDRS: redis-node-0:6379,redis-node-1:6379
-      REDIS_EXPIRATIONHOUR: "24"
-      OBSERVABILITY_PROMETHEUS_PORT: "8080"
-      OBSERVABILITY_TRACING_JAEGERURL: http://jaeger:14268/api/traces
+    # environment:
+    #   USER_HTTP_SERVER_PORT: "80"
+    #   USER_GRPC_SERVER_PORT: "4000"
+    #   USER_OAUTH_GOOGLE_CLIENTID: ${USER_OAUTH_GOOGLE_CLIENTID}
+    #   USER_OAUTH_GOOGLE_CLIENTSECRET: ${USER_OAUTH_GOOGLE_CLIENTSECRET}
+    #   REDIS_PASSWORD: ${REDIS_PASSWORD}
+    #   REDIS_ADDRS: redis-node-0:6379,redis-node-1:6379
+    #   REDIS_EXPIRATIONHOUR: "24"
+    #   OBSERVABILITY_PROMETHEUS_PORT: "8080"
+    #   OBSERVABILITY_TRACING_JAEGERURL: http://jaeger:14268/api/traces
+    env_file:
+      - ../configs/prod.env
   minio:
     image: minio/minio:RELEASE.2023-07-11T21-29-34Z
     volumes:
@@ -157,8 +156,8 @@ services:
       - --console-address
       - ":9001"
     environment:
-      MINIO_ROOT_USER: testaccesskey
-      MINIO_ROOT_PASSWORD: testsecret
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
       MINIO_API_ROOT_ACCESS: "on"
       # FQDN the MinIO Console should use for connecting to the MinIO Server
       MINIO_SERVER_URL: http://minio:9000
@@ -194,27 +193,36 @@ services:
     ports:
       - 14268:14268
       - 16686:16686
-  redis-node-0:
-    image: docker.io/bitnami/redis-cluster:7.0
-    restart: always
-    volumes:
-      - redis-cluster_data-0:/bitnami/redis/data
+  # redis-node-0:
+  #   image: docker.io/bitnami/redis-cluster:7.0
+  #   restart: always
+  #   volumes:
+  #     - redis-cluster_data-0:/bitnami/redis/data
+  #   environment:
+  #     - "REDIS_PASSWORD=${REDIS_PASSWORD}"
+  #     - "REDIS_NODES=redis-node-0 redis-node-1"
+  # redis-node-1:
+  #   image: docker.io/bitnami/redis-cluster:7.0
+  #   restart: always
+  #   volumes:
+  #     - redis-cluster_data-1:/bitnami/redis/data
+  #   depends_on:
+  #     - redis-node-0
+  #   environment:
+  #     - "REDIS_PASSWORD=${REDIS_PASSWORD}"
+  #     - "REDISCLI_AUTH=${REDIS_PASSWORD}"
+  #     - "REDIS_CLUSTER_REPLICAS=1"
+  #     - "REDIS_NODES=redis-node-0 redis-node-1"
+  #     - "REDIS_CLUSTER_CREATOR=yes"
+  redis:
+    image: docker.io/bitnami/redis:7.2
     environment:
-      - "REDIS_PASSWORD=${REDIS_PASSWORD}"
-      - "REDIS_NODES=redis-node-0 redis-node-1"
-  redis-node-1:
-    image: docker.io/bitnami/redis-cluster:7.0
-    restart: always
+      - REDIS_DISABLE_COMMANDS=FLUSHDB,FLUSHALL
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+    ports:
+      - "6379:6379"
     volumes:
-      - redis-cluster_data-1:/bitnami/redis/data
-    depends_on:
-      - redis-node-0
-    environment:
-      - "REDIS_PASSWORD=${REDIS_PASSWORD}"
-      - "REDISCLI_AUTH=${REDIS_PASSWORD}"
-      - "REDIS_CLUSTER_REPLICAS=1"
-      - "REDIS_NODES=redis-node-0 redis-node-1"
-      - "REDIS_CLUSTER_CREATOR=yes"
+      - "redis_data:/bitnami/redis/data"
   kafka:
     image: docker.io/bitnami/kafka:3.6
     restart: unless-stopped
@@ -248,12 +256,13 @@ services:
     environment:
       - CASSANDRA_SEEDS=cassandra
       - CASSANDRA_PASSWORD_SEEDER=yes
-      - CASSANDRA_USER=forkbikash
-      - CASSANDRA_PASSWORD=cassandrapass
+      - CASSANDRA_USER=${CASSANDRA_USER}
+      - CASSANDRA_PASSWORD=${CASSANDRA_PASSWORD}
 volumes:
   kafka_data:
     driver: local
   minio_data:
   cassandra_data:
-  redis-cluster_data-0:
-  redis-cluster_data-1:
+  redis_data:
+  # redis-cluster_data-0:
+  # redis-cluster_data-1:
