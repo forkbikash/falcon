@@ -118,9 +118,9 @@ variable "aws_secret_key" {
   sensitive = true
 }
 
-variable "aws_version" {
-  type = string
-}
+# variable "aws_version" {
+#   type = string
+# }
 
 variable "iam_user_ses" {
   type = string
@@ -185,23 +185,23 @@ variable "bucket" {
 variable "s3_bucket_ownership_controls_rule_object_ownership" {
   type = string
 }
-variable "block_public_acls" {
-  type = bool
-}
-variable "block_public_policy" {
-  type = bool
-}
-variable "ignore_public_acls" {
-  type = bool
-}
-variable "restrict_public_buckets" {
-  type = bool
-}
+# variable "block_public_acls" {
+#   type = bool
+# }
+# variable "block_public_policy" {
+#   type = bool
+# }
+# variable "ignore_public_acls" {
+#   type = bool
+# }
+# variable "restrict_public_buckets" {
+#   type = bool
+# }
 variable "s3_bucket_acl" {
   type = string
 }
 
 # not used
-variable "s3_referer" {
-  type = string
-}
+# variable "s3_referer" {
+#   type = string
+# }

@@ -4,3 +4,11 @@
 *.tfvars
 *.tfstate
 *.tfstate.backup
+
+key
+keys
+*.pub
+*.pem
+*.key
+
+todo
