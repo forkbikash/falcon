@@ -1,3 +1,4 @@
+# revacademy
 # AWS region where the infrastructure will be created
 variable "aws_region" {
   type = string
@@ -205,3 +206,95 @@ variable "s3_bucket_acl" {
 # variable "s3_referer" {
 #   type = string
 # }
+
+
+
+
+# falcon
+variable "falcon_aws_region" {
+  type = string
+  # default = "us-east-2"
+}
+
+variable "falcon_ec2_ami_id" {
+  type = string
+  # default = "ami-0c55b159cbfafe1f0"
+}
+
+variable "falcon_ec2_instance_type" {
+  type = string
+  # default = "t2.micro"
+}
+
+variable "falcon_key_name" {
+  type = string
+  # default = "ssh-key-tf"
+}
+
+variable "falcon_ec2_security_group_ingress_rules" {
+  description = "A list of ingress rules for the ec2 security group."
+  type = list(object({
+    description      = string
+    protocol         = string
+    from_port        = number
+    to_port          = number
+    cidr_blocks      = list(string)
+    ipv6_cidr_blocks = list(string)
+  }))
+  # default = []
+}
+variable "falcon_ec2_security_group_egress_rules" {
+  description = "A list of egress rules for the ec2 security group."
+  type = list(object({
+    description      = string
+    protocol         = string
+    from_port        = number
+    to_port          = number
+    cidr_blocks      = list(string)
+    ipv6_cidr_blocks = list(string)
+  }))
+  # default = []
+}
+variable "falcon_ec2_instance_name" {
+  type = string
+  # default = file("${path.module}/id_rsa.pub")
+}
+variable "falcon_ec2_sg_description" {
+  type = string
+}
+variable "falcon_ec2_sg_name" {
+  type = string
+}
+
+variable "falcon_aws_access_key" {
+  type      = string
+  sensitive = true
+}
+
+variable "falcon_aws_secret_key" {
+  type      = string
+  sensitive = true
+}
+
+variable "falcon_iam_user_s3" {
+  type = string
+}
+variable "falcon_iam_group_s3" {
+  type = string
+}
+variable "falcon_iam_policy_arn_s3_full_access" {
+  type = string
+}
+variable "falcon_is_for_vpc" {
+  type = bool
+}
+
+variable "falcon_bucket" {
+  type = string
+}
+variable "falcon_s3_bucket_ownership_controls_rule_object_ownership" {
+  type = string
+}
+variable "falcon_s3_bucket_acl" {
+  type = string
+}
