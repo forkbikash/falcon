@@ -10,5 +10,6 @@ keys
 *.pub
 *.pem
 *.key
+*.srl
 
 todo

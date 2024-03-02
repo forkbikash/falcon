@@ -27,9 +27,11 @@ case "$1" in
         ;;
     "stop")
         if [ "$2" = "dev" ]; then
-            docker-compose -f ./docker-compose.dev.yaml stop
+            source ../configs/dev.env
+            docker-compose -f ./docker-compose.dev.yaml --env-file ../configs/dev.env stop
         elif [ "$2" = "prod" ]; then
-            docker-compose -f ./docker-compose.prod.yaml stop
+            source ../configs/prod.env
+            docker-compose -f ./docker-compose.prod.yaml --env-file ../configs/prod.env stop
         else
             echo "Invalid option for 'stop'. Use 'dev' or 'prod'."
             # exit 1

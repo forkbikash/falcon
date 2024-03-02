@@ -8,7 +8,7 @@ services:
     # hostname: nginx
     ports:
       - "80:80"
-      # - "443:443"
+      - "443:443"
     extra_hosts:
       # - "localhost:127.0.0.1"
       # - "127.0.0.1:127.0.0.1"
@@ -19,9 +19,9 @@ services:
     #   - match
     #   - uploader
     #   - user
-    # volumes:
-    #   - /etc/ssl/certs/forkbikash.com.pem:/etc/ssl/certs/forkbikash.com.pem
-    #   - /etc/ssl/private/forkbikash.com.key:/etc/ssl/private/forkbikash.com.key
+    volumes:
+      - /etc/ssl/certs/localhost.pem:/etc/ssl/certs/localhost.pem
+      - /etc/ssl/private/localhost.key:/etc/ssl/private/localhost.key
   minio:
     image: minio/minio:RELEASE.2023-07-11T21-29-34Z
     volumes:

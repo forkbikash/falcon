@@ -1,0 +1,15 @@
+steps to create self signed certificate:
+- create CA certificate
+openssl req -newkey rsa:2048 -nodes -keyout falcon-ca.key -x509 -days 365 -out falcon-ca.pem -subj "/C=IN/ST=Karnataka/L=Bengaluru/O=FalconCA/OU=Tech/CN=FalconCA/emailAddress=mishra.bikash002@gmail.com"
+
+- verify
+openssl x509 -in ./falcon-ca.pem -noout -text
+
+- create server certificate signing request(CSR)
+openssl req -newkey rsa:2048 -nodes -keyout localhost.key -out localhost-csr.pem -subj "/C=IN/ST=Karnataka/L=Bengaluru/O=Falcon/OU=Tech/CN=Falcon/emailAddress=mishra.bikash002@gmail.com"
+
+- sign the server request using CA certificate
+openssl x509 -req -in localhost-csr.pem -days 365 -CA falcon-ca.pem -CAkey falcon-ca.key -CAcreateserial -out localhost.pem
+
+- verify
+openssl x509 -in ./localhost.pem -noout -text
