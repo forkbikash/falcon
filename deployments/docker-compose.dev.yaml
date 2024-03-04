@@ -69,6 +69,7 @@ services:
     ports:
       - 14268:14268
       - 16686:16686
+  # redis cluster doesn't work in mac. so using redis without cluster mode
   redis:
     image: docker.io/bitnami/redis:7.2
     environment:
@@ -108,6 +109,7 @@ services:
       - 9042:9042
     volumes:
       - cassandra_data:/bitnami
+      # to run cql script inside cassandra container
       - ./cassandra:/docker-entrypoint-initdb.d
     environment:
       - CASSANDRA_SEEDS=cassandra
