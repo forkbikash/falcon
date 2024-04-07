@@ -1,0 +1,37 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: forwarder
+  namespace: my-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: forwarder
+  template:
+    metadata:
+      labels:
+        app: forwarder
+    spec:
+      containers:
+        - name: forwarder
+          image: forkbikash/chat-api:kafka
+          command: ["forwarder"]
+          ports:
+            - containerPort: 4000
+          envFrom:
+            - configMapRef:
+                name: prod-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: forwarder
+  namespace: my-app
+spec:
+  selector:
+    app: forwarder
+  ports:
+    - port: 4000
+      targetPort: 4000

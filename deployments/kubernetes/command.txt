@@ -1,0 +1,9 @@
+examples:
+kubectl create secret generic my-secrets --from-env-file=.env -n my-app
+kubectl apply -f my-secrets.yaml --from-env-file=.env
+
+
+local testing:
+brew update
+brew install minikube
+minikube start --vm-driver=docker

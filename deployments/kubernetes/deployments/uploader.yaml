@@ -1,0 +1,37 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: uploader
+  namespace: my-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: uploader
+  template:
+    metadata:
+      labels:
+        app: uploader
+    spec:
+      containers:
+        - name: uploader
+          image: forkbikash/chat-api:kafka
+          command: ["uploader"]
+          ports:
+            - containerPort: 80
+          envFrom:
+            - configMapRef:
+                name: prod-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: uploader
+  namespace: my-app
+spec:
+  selector:
+    app: uploader
+  ports:
+    - port: 80
+      targetPort: 80

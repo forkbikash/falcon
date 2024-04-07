@@ -1,0 +1,84 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cassandra
+  namespace: my-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: cassandra
+  template:
+    metadata:
+      labels:
+        app: cassandra
+    spec:
+      containers:
+        - name: cassandra
+          image: docker.io/bitnami/cassandra:4.0
+          ports:
+            - containerPort: 9042
+          env:
+            - name: CASSANDRA_SEEDS
+              value: "cassandra"
+            - name: CASSANDRA_PASSWORD_SEEDER
+              value: "yes"
+            - name: CASSANDRA_USER
+              valueFrom:
+                secretKeyRef:
+                  name: common-secret
+                  key: CASSANDRA_USER
+            - name: CASSANDRA_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: common-secret
+                  key: CASSANDRA_PASSWORD
+          volumeMounts:
+            - name: data
+              mountPath: /bitnami
+            - name: init-scripts
+              mountPath: /docker-entrypoint-initdb.d
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: cassandra-data
+        # - name: init-scripts
+        #   configMap:
+        #     name: cassandra-init-scripts
+        - name: init-scripts
+          hostPath:
+            path: ../../cassandra
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: cassandra
+  namespace: my-app
+spec:
+  selector:
+    app: cassandra
+  ports:
+    - port: 9042
+      targetPort: 9042
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: cassandra-data
+  namespace: my-app
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi
+# ---
+# apiVersion: v1
+# kind: ConfigMap
+# metadata:
+#   name: cassandra-init-scripts
+#   namespace: my-app
+# data:
+#   init.cql: |
+#     CREATE KEYSPACE IF NOT EXISTS my_keyspace WITH REPLICATION = {'class': 'SimpleStrategy', 'replication_factor': 1};
