@@ -58,6 +58,9 @@ module "falcon_aws_key_pair" {
   public_key = file("${path.module}/keys/falcon_id_rsa.pub")
 }
 
+# todo: add target group example(target group is for grouping of resources)
+
+# todo: ec2 instances can be wrapped in a target group
 module "ec2_instance" {
   source = "../../modules/ec2instance"
 
